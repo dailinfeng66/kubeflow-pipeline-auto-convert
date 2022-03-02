@@ -6,11 +6,11 @@ import com.idse.pipelinescript.pojo.pipeline.Param;
 import com.idse.pipelinescript.pojo.pipeline.Pipeline;
 import com.idse.pipelinescript.service.intf.GenerateScriptService;
 import com.idse.pipelinescript.utils.FileUtils;
-import com.idse.pipelinescript.utils.GenerateCode;
+import com.idse.pipelinescript.utils.generate.code.intf.GenerateCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,6 +30,10 @@ import static java.util.regex.Pattern.compile;
 @Service
 @Slf4j
 public class GenerateScriptImpl implements GenerateScriptService {
+
+    @Resource
+    GenerateCode generateCode;
+
     @Override
     public boolean generateYaml(Pipeline pipeline) throws IOException {
         StringBuilder res = new StringBuilder();
@@ -73,7 +77,7 @@ public class GenerateScriptImpl implements GenerateScriptService {
         res.append("):\r\n");
 
         //将节点列表转换成map并添加返回值
-        Map<String, Component> componentMap = GenerateCode.getComponentMap(pipeline.getComponents());
+        Map<String, Component> componentMap = generateCode.getComponentMap(pipeline.getComponents());
         /**
          * 添加调用组件代码
          */
@@ -104,7 +108,7 @@ public class GenerateScriptImpl implements GenerateScriptService {
         /**
          * 写入文件
          */
-        String fileName = GenerateCode.getComponentName() + ".py";
+        String fileName = generateCode.getComponentName() + ".py";
         BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
         writer.write(res.toString());
         writer.close();
@@ -123,7 +127,7 @@ public class GenerateScriptImpl implements GenerateScriptService {
          *  有bug：
          *      1.包含就删掉整行，如果中文写在代码内代码将被删除
          */
-        List<String> noChineseCodes = codeLines.stream().filter(e -> !GenerateCode.containChinese(e)).collect(Collectors.toList());
+        List<String> noChineseCodes = codeLines.stream().filter(e -> !generateCode.containChinese(e)).collect(Collectors.toList());
         /**
          * 获取导包语句
          */
@@ -180,7 +184,7 @@ public class GenerateScriptImpl implements GenerateScriptService {
                             Matcher paramM = variableName.matcher(param.strip());
                             paramM.find();
                             String paramStr = paramM.group();
-                            log.info("参数名称为:"+paramStr);
+                            log.info("参数名称为:" + paramStr);
                             singleParamNames.add(paramStr);
                             replaceCode.append(paramStr);
                             //添加输入  输入的文件名为xxx_path
@@ -227,7 +231,6 @@ public class GenerateScriptImpl implements GenerateScriptService {
         currentCodes.add("from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath");
         currentCodes.add("import kfp.components as comp");
 
-
         //在转换好的方法体最前面加上导包语句
         for (String code : transferMethods) {
             //使用一行代码的开头为def 结尾为:判断这行代码是方法定义
@@ -239,19 +242,18 @@ public class GenerateScriptImpl implements GenerateScriptService {
                 //匹配到定义方法和方法名
                 Pattern methodNamePattern = compile("^def[ ]{1,}[0-9a-zA-Z_ ]*");
                 Matcher methodNameMatchar = methodNamePattern.matcher(code.strip());
-
                 methodNameMatchar.find();
                 //方法名
                 String method = methodNameMatchar.group().replaceAll("def ", "").strip();
                 StringBuilder componentCode = new StringBuilder();
-//                @component(output_component_file='get_model1.yaml',packages_to_install=['lmfit','joblib','pandas',])
+                //@component(output_component_file='get_model1.yaml',packages_to_install=['lmfit','joblib','pandas',])
                 //添加前面部分
                 componentCode.append("@component(output_component_file='");
                 //添加方法名 导出的组件名为 方法名_component.yaml
                 componentCode.append(method);
                 componentCode.append("_component.yaml',packages_to_install=[");
                 //寻找依赖的包
-                List<String> dependences = GenerateCode.getDependences(importCodes);
+                List<String> dependences = generateCode.getDependences(importCodes);
                 for (String dependence : dependences) {
                     componentCode.append(dependence);
                     componentCode.append(",");
@@ -311,7 +313,7 @@ public class GenerateScriptImpl implements GenerateScriptService {
             }
 
         }
-        
+
 
         currentCodes.stream().forEach(System.out::println);
         return null;

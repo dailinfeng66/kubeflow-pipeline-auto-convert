@@ -1,27 +1,26 @@
 package com.idse.pipelinescript;
 
 import com.idse.pipelinescript.service.impl.GenerateScriptImpl;
-import com.idse.pipelinescript.service.intf.GenerateScriptService;
-import com.idse.pipelinescript.utils.FileUtils;
-import com.idse.pipelinescript.utils.GenerateCode;
+import com.idse.pipelinescript.utils.generate.code.impl.GenerateCodeImpl;
+import com.idse.pipelinescript.utils.generate.code.intf.GenerateCode;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static java.util.regex.Pattern.compile;
 
 @SpringBootTest
 @Slf4j
 class PipelineScriptApplicationTests {
+
+    @Resource
+    GenerateCode generateCode;
 
     @Test
     void regularExpression() {
@@ -68,8 +67,8 @@ class PipelineScriptApplicationTests {
      */
     @Test
     void getFuncName() {
-        System.out.println(GenerateCode.getFuncName("def fun2_min(params=10, x:int=10, y)"));
-        System.out.println(GenerateCode.getFuncName("    def fun2_min(params=10, x:int=10, y):"));
+        System.out.println(generateCode.getFuncName("def fun2_min(params=10, x:int=10, y)"));
+        System.out.println(generateCode.getFuncName("    def fun2_min(params=10, x:int=10, y):"));
     }
 
     /**
@@ -77,7 +76,7 @@ class PipelineScriptApplicationTests {
      */
     @Test
     void getSourceFunc() {
-        HashSet<String> sourceFunc = GenerateCode.getSourceFunc(List.of(
+        HashSet<String> sourceFunc = generateCode.getSourceFunc(List.of(
                 "def load_data(url,filename:str,url1:int = 10):",
                 "    f = requests.get(url)",
                 "def get_model1(xdata,ydata):"
