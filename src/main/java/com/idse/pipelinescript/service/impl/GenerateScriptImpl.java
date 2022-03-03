@@ -9,6 +9,7 @@ import com.idse.pipelinescript.utils.FileUtils;
 import com.idse.pipelinescript.utils.generate.code.intf.GenerateCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.io.BufferedWriter;
@@ -34,6 +35,13 @@ public class GenerateScriptImpl implements GenerateScriptService {
     @Resource
     GenerateCode generateCode;
 
+    /**
+     * pipeline生成yaml的文件
+     *
+     * @param pipeline
+     * @return
+     * @throws IOException
+     */
     @Override
     public boolean generateYaml(Pipeline pipeline) throws IOException {
         StringBuilder res = new StringBuilder();
@@ -116,6 +124,12 @@ public class GenerateScriptImpl implements GenerateScriptService {
         return true;
     }
 
+    /**
+     * 读取python文件对代码进行改造
+     * * @param filePath
+     *
+     * @return
+     */
     @Override
     public String generateComponent(String filePath) {
         //以行为单位读取文件
@@ -226,6 +240,7 @@ public class GenerateScriptImpl implements GenerateScriptService {
          * from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath
          * import kfp.components as comp
          */
+
         currentCodes.add("import kfp");
         currentCodes.add("kfp.v2 import dsl");
         currentCodes.add("from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath");
@@ -314,8 +329,54 @@ public class GenerateScriptImpl implements GenerateScriptService {
 
         }
 
-
-        currentCodes.stream().forEach(System.out::println);
+        /**
+         * 到此为止 数据的方法改造完成
+         * 下面要做的是方法调用当前代码文件中的其他方法时将其他方法引入到当前的方法中
+         */
+        List<String> resCodes = addReferency(currentCodes,noChineseCodes);
+        resCodes.stream().forEach(System.out::println);
         return null;
+    }
+
+    /**
+     * 添加方法调用方法的转换
+     *  还传入了initialcode用来获取被调用方法最开始的样子，在方法内部调用不需要进行方法参数的转换 因此需要初始代码
+     * @param codes
+     * @return
+     */
+    @Override
+    public List<String> addReferency(List<String> codes,List<String> initialCodes) {
+        //紧凑代码，删除多余的空行
+        List<String> list = initialCodes.stream().filter(code -> !StringUtils.isEmpty(code.strip().replaceAll("\n", ""))).collect(Collectors.toList());
+        //获取到了每个方法
+        HashMap<String, List<String>> funcCodes = generateCode.getFuncCodes(list);
+        log.info(funcCodes.keySet().toString());
+        for (Map.Entry<String, List<String>> entry : funcCodes.entrySet()) {
+
+            //  获取当前方法中所调用的函数
+            HashSet<String> callMethods = generateCode.getCallMethods(entry.getValue());
+            log.info(callMethods.toString());
+            for (String funcName : callMethods) {
+                //如果当前方法调用了其他方法，就获取到那个方法并添加到当前方法里面去
+                if (funcCodes.get(funcName) != null) {
+                    List<String> innerFuncCode = funcCodes.get(funcName).stream().map(e -> "    " + e).collect(Collectors.toList());
+                    System.out.println(innerFuncCode);
+                    //遍历所有代码获取到当前方法并在当前方法的下一行添加被调用的代码
+                    for (int i = 0; i < codes.size(); i++) {
+                        String currentCode = codes.get(i);
+                        String currentFuncName = generateCode.getFuncName(currentCode);
+                        if (StringUtils.isEmpty(currentFuncName)) {
+                            //表示当前代码不是方法定义代码
+                            continue;
+                        }
+                        //如果当前代码是方法定义代码的话,判断是否是当前方法 如果是的话就在当前代码下插入引用方法的代码
+                        if (Objects.equals(currentFuncName, entry.getKey())) {
+                            codes.addAll(i + 1, innerFuncCode);
+                        }
+                    }
+                }
+            }
+        }
+        return codes;
     }
 }

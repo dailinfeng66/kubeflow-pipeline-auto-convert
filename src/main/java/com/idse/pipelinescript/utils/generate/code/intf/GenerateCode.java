@@ -51,7 +51,7 @@ public interface GenerateCode {
      * 根据方法定义代码获取方法名
      *
      * @param code
-     * @return
+     * @return   如果当前行代码不是方法定义代码的话就返回空
      */
     String getFuncName(String code);
 
@@ -64,12 +64,12 @@ public interface GenerateCode {
     HashSet<String> getSourceFunc(List<String> codes);
 
     /**
-     * 获取一个方法的所有变量
+     * 获取一个方法中调用外部方法的方法名
      *
      * @param codes
      * @return
      */
-    HashSet<String> getVariable(List<String> codes);
+    HashSet<String> getCallMethods(List<String> codes);
 
     /**
      * 获取一个方法的所有代码

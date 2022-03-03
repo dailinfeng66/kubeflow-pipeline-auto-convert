@@ -140,20 +140,52 @@ public class GenerateCodeImpl implements GenerateCode {
     }
 
     /**
-     * 获取一个方法的所有变量
+     * 获取一个方法中调用外部方法的方法名
      *
      * @param codes
      * @return
      */
     @Override
-    public HashSet<String> getVariable(List<String> codes) {
+    public HashSet<String> getCallMethods(List<String> codes) {
         HashSet<String> hashSet = new HashSet<>();
         for (String code : codes) {
-            //去除前后空格
             code = code.strip();
+            /**
+             * 匹配 xxx(xxx)
+             */
+            Pattern methodName = compile("[0-9a-zA-Z_ ]*\\([\\s\\S]*\\)");
+            Matcher methodM = methodName.matcher(code);
+            if (methodM.find()) {
+                // 当匹配到方法调用的时候去匹配方法名
+                Pattern funcNameP = compile("[0-9a-zA-Z_]*");
 
+                String totalFuncCode = methodM.group().strip();
+                //表示这是方法的定义
+                if (totalFuncCode.startsWith("def ")) {
+                    continue;
+                }
+                /**
+                 * 匹配 xxx xxx()的这种调用形式
+                 */
+                Pattern spaceFuncP = compile("[\\s\\S]{1,}[ ]{1,}[0-9a-zA-Z_ ]*\\([\\s\\S]*\\)");
+                Matcher spaceFuncM = spaceFuncP.matcher(totalFuncCode);
+                if (spaceFuncM.find()) {
+                    String spaceCode = spaceFuncM.group().strip();
+                    spaceCode = spaceCode.split(" ", 2)[1];
+                    Matcher funcM = funcNameP.matcher(spaceCode.strip());
+                    funcM.find();
+                    String res = funcM.group();
+                    hashSet.add(res.strip());
+                    continue;
+                }
+                Matcher funcM = funcNameP.matcher(totalFuncCode.strip());
+                funcM.find();
+                String res = funcM.group();
+                hashSet.add(res.strip());
+            }
         }
-        return null;
+        log.info(hashSet.toString());
+        return hashSet;
     }
 
     /**
@@ -184,7 +216,7 @@ public class GenerateCodeImpl implements GenerateCode {
                 //重新初始化方法列表
                 codeList = new LinkedList<>();
                 codeList.add(code);
-            } else {
+            } else if(!code.strip().startsWith("@component(output_component_file=")){
                 //如果当前代码属于一个方法
                 if (!StringUtils.isEmpty(funcName) && codeList != null) {
                     codeList.add(code);
