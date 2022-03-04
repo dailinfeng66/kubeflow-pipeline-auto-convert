@@ -16,7 +16,7 @@ import java.util.List;
 public interface GenerateScriptService {
     boolean generateYaml(Pipeline pipeline) throws IOException;
 
-    String generateComponent(String filePath);
+    String generateComponent(String filePath) throws IOException, InterruptedException;
 
     /**
      * 添加方法调用方法的转换
@@ -25,4 +25,11 @@ public interface GenerateScriptService {
      * @return
      */
     List<String> addReferency(List<String> codes, List<String> initialCodes, List<String> importList);
+
+    /**
+     * 调用python方法
+     * @param command
+     * @return
+     */
+    String callPythonFunc(String command) throws IOException, InterruptedException;
 }

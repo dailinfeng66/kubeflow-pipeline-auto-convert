@@ -12,9 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -131,7 +129,7 @@ public class GenerateScriptImpl implements GenerateScriptService {
      * @return
      */
     @Override
-    public String generateComponent(String filePath) {
+    public String generateComponent(String filePath) throws IOException, InterruptedException {
         //以行为单位读取文件
         List<String> codeLines = FileUtils.readSourceCode(filePath);
         //方法返回元数据名称栈，主要用于return代码替换的时候找到当前return对应的是哪一个元数据返回
@@ -242,7 +240,7 @@ public class GenerateScriptImpl implements GenerateScriptService {
          */
 
         currentCodes.add("import kfp");
-        currentCodes.add("kfp.v2 import dsl");
+        currentCodes.add("from kfp.v2 import dsl");
         currentCodes.add("from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath");
         currentCodes.add("import kfp.components as comp");
 
@@ -334,7 +332,16 @@ public class GenerateScriptImpl implements GenerateScriptService {
          * 下面要做的是方法调用当前代码文件中的其他方法时将其他方法引入到当前的方法中
          */
         List<String> resCodes = addReferency(currentCodes, noChineseCodes, importCodes);
-        resCodes.stream().forEach(System.out::println);
+        /**
+         * 将代码存入文件并执行
+         */
+        String fileName = generateCode.getComponentName() + ".py";
+        try {
+            FileUtils.writeCode(resCodes, fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        callPythonFunc("python " + fileName);
         return null;
     }
 
@@ -382,5 +389,27 @@ public class GenerateScriptImpl implements GenerateScriptService {
             }
         }
         return resList;
+    }
+
+
+    /**
+     * 调用python方法
+     *
+     * @param command
+     * @return
+     */
+    @Override
+    public String callPythonFunc(String command) throws IOException, InterruptedException {
+        Process p = Runtime.getRuntime().exec(command);
+        BufferedReader br = new BufferedReader(new
+                InputStreamReader(p.getInputStream()));
+        String line = null;
+        while ((line = br.readLine()) != null) {
+            System.out.println(line);
+        }
+        br.close();
+        p.waitFor();
+
+        return null;
     }
 }

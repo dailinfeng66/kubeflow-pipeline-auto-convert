@@ -44,4 +44,22 @@ public class FileUtils {
         }
         return codes;
     }
+
+    /**
+     * 写代码入文件
+     *
+     * @param codes
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    public static Boolean writeCode(List<String> codes, String fileName) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+        for (String code : codes) {
+            writer.write(code + "\n");
+        }
+
+        writer.close();
+        return true;
+    }
 }

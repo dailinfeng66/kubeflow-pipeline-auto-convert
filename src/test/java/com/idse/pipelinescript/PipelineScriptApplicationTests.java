@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -36,7 +37,7 @@ class PipelineScriptApplicationTests {
     GenerateScriptImpl generateScriptService;
 
     @Test
-    void readFileTest() {
+    void readFileTest() throws IOException, InterruptedException {
         String filpath = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/pipeline-script/src/main/resources/envtest.py";
 
         generateScriptService.generateComponent(filpath);
