@@ -24,5 +24,5 @@ public interface GenerateScriptService {
      * @param codes
      * @return
      */
-    List<String> addReferency(List<String> codes, List<String> initialCodes);
+    List<String> addReferency(List<String> codes, List<String> initialCodes, List<String> importList);
 }

@@ -333,34 +333,33 @@ public class GenerateScriptImpl implements GenerateScriptService {
          * 到此为止 数据的方法改造完成
          * 下面要做的是方法调用当前代码文件中的其他方法时将其他方法引入到当前的方法中
          */
-        List<String> resCodes = addReferency(currentCodes,noChineseCodes);
+        List<String> resCodes = addReferency(currentCodes, noChineseCodes, importCodes);
         resCodes.stream().forEach(System.out::println);
         return null;
     }
 
     /**
      * 添加方法调用方法的转换
-     *  还传入了initialcode用来获取被调用方法最开始的样子，在方法内部调用不需要进行方法参数的转换 因此需要初始代码
+     * 还传入了initialcode用来获取被调用方法最开始的样子，在方法内部调用不需要进行方法参数的转换 因此需要初始代码
+     *
      * @param codes
      * @return
      */
     @Override
-    public List<String> addReferency(List<String> codes,List<String> initialCodes) {
+    public List<String> addReferency(List<String> codes, List<String> initialCodes, List<String> importList) {
         //紧凑代码，删除多余的空行
         List<String> list = initialCodes.stream().filter(code -> !StringUtils.isEmpty(code.strip().replaceAll("\n", ""))).collect(Collectors.toList());
         //获取到了每个方法
         HashMap<String, List<String>> funcCodes = generateCode.getFuncCodes(list);
-        log.info(funcCodes.keySet().toString());
+        //构造返回数据列表
+        List<String> resList = new LinkedList<>(codes);
         for (Map.Entry<String, List<String>> entry : funcCodes.entrySet()) {
-
             //  获取当前方法中所调用的函数
             HashSet<String> callMethods = generateCode.getCallMethods(entry.getValue());
-            log.info(callMethods.toString());
             for (String funcName : callMethods) {
                 //如果当前方法调用了其他方法，就获取到那个方法并添加到当前方法里面去
                 if (funcCodes.get(funcName) != null) {
                     List<String> innerFuncCode = funcCodes.get(funcName).stream().map(e -> "    " + e).collect(Collectors.toList());
-                    System.out.println(innerFuncCode);
                     //遍历所有代码获取到当前方法并在当前方法的下一行添加被调用的代码
                     for (int i = 0; i < codes.size(); i++) {
                         String currentCode = codes.get(i);
@@ -371,12 +370,17 @@ public class GenerateScriptImpl implements GenerateScriptService {
                         }
                         //如果当前代码是方法定义代码的话,判断是否是当前方法 如果是的话就在当前代码下插入引用方法的代码
                         if (Objects.equals(currentFuncName, entry.getKey())) {
-                            codes.addAll(i + 1, innerFuncCode);
+                            //向下探测 直到找到import的最后一句话,将detect探测到不是导包语句的第一行
+                            i++;
+                            while (codes.get(i).strip().startsWith("import ") || codes.get(i).strip().startsWith("from ")) {
+                                i++;
+                            }
+                            resList.addAll(i, innerFuncCode);
                         }
                     }
                 }
             }
         }
-        return codes;
+        return resList;
     }
 }

@@ -184,7 +184,7 @@ public class GenerateCodeImpl implements GenerateCode {
                 hashSet.add(res.strip());
             }
         }
-        log.info(hashSet.toString());
+        log.info("当前方法调用的方法有："+hashSet.toString());
         return hashSet;
     }
 

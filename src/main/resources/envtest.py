@@ -11,7 +11,7 @@ def load_data(url,filename:str,url1:int = 10):
     return xdata,ydata
 
 def get_model1(xdata,ydata):
-    load_data()
+#     load_data()
     params = Parameters()
     params.add('beta0', value= 1.)
     params.add('beta1', value= 1.)
@@ -20,6 +20,6 @@ def get_model1(xdata,ydata):
     params.add('sk1', value= 1.)
     params.add('ck2', value= 1.)
     params.add('sk2', value= 1.)
-    model = minimize(fun1min, params, args = (xdata.values, ydata.values))
+    model = minimize(load_data(), params, args = (xdata.values, ydata.values))
     return model
 
