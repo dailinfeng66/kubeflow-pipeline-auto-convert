@@ -4,31 +4,11 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from matplotlib.pylab import mpl
 
-# 画图显示设置
-mpl.rcParams['font.sans-serif'] = ['SimHei']  # 显示中文
-mpl.rcParams['axes.unicode_minus'] = False  # 显示负号
 
-# 从Excel表读取数据
-name = "expdata.xlsx" # 日间放疗 : 原始数据表格 : expdata
-a = pd.read_excel(name) # DataFrame格式
 
-# 构造训练数据
-xdata = a[['t', 'X_t_1', 'X_t_2', 't_T_1_X_t_1', 't_T_2_X_t_2', 'H_t','ck1', 'sk1', 'ck2', 'sk2']]
-x = xdata.values
-ydata = np.log(a["Y"])
-y = ydata.values
-
-def fun1(x, b0, b1, b6, c1, s1, c2, s2):
-    return b0 + b1 * x[0] + b6 * x[5] \
-          + c1 * x[6] + s1 * x[7] + c2 * x[8] + s2 * x[9]
-
-def fun2(x, b0, b1, b2, b4, b6, c1, s1, c2, s2):
-    return b0 + b1 * x[0] + b2 * x[1] + b4 * x[3] + b6 * x[5] \
-          + c1 * x[6] + s1 * x[7] + c2 * x[8] + s2 * x[9]
-
-def fun3(x, b0, b1, b2, b3, b4, b5, b6, c1, s1, c2, s2): 
-    return b0 + b1 * x[0] + b2 * x[1] + b3 * x[2] + b4 * x[3] \
-         + b5 * x[4] + b6 * x[5] + c1 * x[6] + s1 * x[7] + c2 * x[8] + s2 * x[9]
+def fun3(x, b0, b1, b2, b3, b4, b5, b6, c1, s1, c2, s2):
+    res = b0 + b1 * x[0] + b2 * x[1] + b3 * x[2] + b4 * x[3] + b5 * x[4] + b6 * x[5] + c1 * x[6] + s1 * x[7] + c2 * x[8] + s2 * x[9]
+    return res
 
 def fun1_wrapper_for_odr(beta, x):
     return fun1(x, *beta)
@@ -89,27 +69,3 @@ def plt_final_results(x, y, fun1, params1, fun2, params2, fun3, params3):
     plt.legend()
     plt.show()
     
-params1, cov1 = curve_fit(fun1, x.T, y)
-params2, cov2 = curve_fit(fun2, x.T, y)
-params3, cov3 = curve_fit(fun3, x.T, y)
-
-print('######################################## 以下为疫情未发生预测结果 #######################################')
-param_names1 = ["beta0", "beta1", "vbeta6", "ck1", "sk1", "ck2", "sk2"]
-
-get_results(fun1_wrapper_for_odr, x, y, params1, param_names1)
-plt_results(x, y, fun1, params1, 55, 144)
-
-print('##################################### 以下为疫情爆发但是没有缓解预测 #####################################')
-param_names2 = ["beta0", "beta1", "beta2", "beta4", "vbeta6", "ck1", "sk1", "ck2", "sk2"]
-
-get_results(fun2_wrapper_for_odr, x, y, params2, param_names2)
-plt_results(x, y, fun2, params2, 63, 144)
-
-print('######################################### 以下为真实数据点拟合 #########################################')
-param_names3 = ["beta0", "beta1", "beta2", "beta3", "beta4", "beta5", "vbeta6", "ck1", "sk1", "ck2", "sk2"]
-
-get_results(fun3_wrapper_for_odr, x, y, params3, param_names3)
-plt_results(x, y, fun3, params3, 0, 144)
-
-print('########################################## 以下为最终合并结果 ##########################################')
-plt_final_results(x, y, fun1, params1, fun2, params2, fun3, params3)

@@ -15,6 +15,7 @@ def fun2min(params1, x1, y1):
     model = beta0 + beta1 * x[:, 0] + beta6 * x[:, 5] + ck1 * x[:, 6] + sk1 * x[:, 7] + ck2 * x[:, 8] + sk2 * x[:, 9]
     return model - y
 
+
 def fun1min(params, x, y):
     beta0 = params['beta0'].value
     beta1 = params['beta1'].value

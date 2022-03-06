@@ -38,7 +38,7 @@ class PipelineScriptApplicationTests {
 
     @Test
     void readFileTest() throws IOException, InterruptedException {
-        String filpath = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/pipeline-script/src/main/resources/interrupted_timeseries_analysis.py";
+        String filpath = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/pipeline-script/src/main/resources/testfile.py";
 
         generateScriptService.generateComponent(filpath);
     }
