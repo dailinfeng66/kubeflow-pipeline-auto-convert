@@ -1,0 +1,409 @@
+digraph {
+	0 [label=Module]
+	1 [label=Import]
+	1 -> 0
+	2 [label=alias]
+	2 -> 1
+	3 [label=Import]
+	3 -> 0
+	4 [label=alias]
+	4 -> 3
+	5 [label=Import]
+	5 -> 0
+	6 [label=alias]
+	6 -> 5
+	7 [label=FunctionDef]
+	7 -> 0
+	8 [label=arguments]
+	8 -> 7
+	9 [label=arg]
+	9 -> 8
+	10 [label=arg]
+	10 -> 8
+	11 [label=Name]
+	11 -> 10
+	12 [label=Load]
+	12 -> 11
+	13 [label=arg]
+	13 -> 8
+	14 [label=Name]
+	14 -> 13
+	15 [label=Load]
+	15 -> 14
+	16 [label=Constant]
+	16 -> 8
+	17 [label=Assign]
+	17 -> 7
+	18 [label=Name]
+	18 -> 17
+	19 [label=Store]
+	19 -> 18
+	20 [label=Call]
+	20 -> 17
+	21 [label=Attribute]
+	21 -> 20
+	22 [label=Name]
+	22 -> 21
+	23 [label=Load]
+	23 -> 22
+	24 [label=Load]
+	24 -> 21
+	25 [label=Name]
+	25 -> 20
+	26 [label=Load]
+	26 -> 25
+	27 [label=With]
+	27 -> 7
+	28 [label=withitem]
+	28 -> 27
+	29 [label=Call]
+	29 -> 28
+	30 [label=Name]
+	30 -> 29
+	31 [label=Load]
+	31 -> 30
+	32 [label=Name]
+	32 -> 29
+	33 [label=Load]
+	33 -> 32
+	34 [label=Constant]
+	34 -> 29
+	35 [label=Name]
+	35 -> 28
+	36 [label=Store]
+	36 -> 35
+	37 [label=Expr]
+	37 -> 27
+	38 [label=Call]
+	38 -> 37
+	39 [label=Attribute]
+	39 -> 38
+	40 [label=Name]
+	40 -> 39
+	41 [label=Load]
+	41 -> 40
+	42 [label=Load]
+	42 -> 39
+	43 [label=Attribute]
+	43 -> 38
+	44 [label=Name]
+	44 -> 43
+	45 [label=Load]
+	45 -> 44
+	46 [label=Load]
+	46 -> 43
+	47 [label=Assign]
+	47 -> 7
+	48 [label=Name]
+	48 -> 47
+	49 [label=Store]
+	49 -> 48
+	50 [label=Call]
+	50 -> 47
+	51 [label=Attribute]
+	51 -> 50
+	52 [label=Name]
+	52 -> 51
+	53 [label=Load]
+	53 -> 52
+	54 [label=Load]
+	54 -> 51
+	55 [label=Name]
+	55 -> 50
+	56 [label=Load]
+	56 -> 55
+	57 [label=Assign]
+	57 -> 7
+	58 [label=Name]
+	58 -> 57
+	59 [label=Store]
+	59 -> 58
+	60 [label=Subscript]
+	60 -> 57
+	61 [label=Name]
+	61 -> 60
+	62 [label=Load]
+	62 -> 61
+	63 [label=List]
+	63 -> 60
+	64 [label=Constant]
+	64 -> 63
+	65 [label=Constant]
+	65 -> 63
+	66 [label=Constant]
+	66 -> 63
+	67 [label=Constant]
+	67 -> 63
+	68 [label=Constant]
+	68 -> 63
+	69 [label=Constant]
+	69 -> 63
+	70 [label=Constant]
+	70 -> 63
+	71 [label=Constant]
+	71 -> 63
+	72 [label=Constant]
+	72 -> 63
+	73 [label=Constant]
+	73 -> 63
+	74 [label=Load]
+	74 -> 63
+	75 [label=Load]
+	75 -> 60
+	76 [label=Assign]
+	76 -> 7
+	77 [label=Name]
+	77 -> 76
+	78 [label=Store]
+	78 -> 77
+	79 [label=Call]
+	79 -> 76
+	80 [label=Attribute]
+	80 -> 79
+	81 [label=Name]
+	81 -> 80
+	82 [label=Load]
+	82 -> 81
+	83 [label=Load]
+	83 -> 80
+	84 [label=Subscript]
+	84 -> 79
+	85 [label=Name]
+	85 -> 84
+	86 [label=Load]
+	86 -> 85
+	87 [label=Constant]
+	87 -> 84
+	88 [label=Load]
+	88 -> 84
+	89 [label=Return]
+	89 -> 7
+	90 [label=Tuple]
+	90 -> 89
+	91 [label=Name]
+	91 -> 90
+	92 [label=Load]
+	92 -> 91
+	93 [label=Name]
+	93 -> 90
+	94 [label=Load]
+	94 -> 93
+	95 [label=Load]
+	95 -> 90
+	96 [label=Tuple]
+	96 -> 7
+	97 [label=Name]
+	97 -> 96
+	98 [label=Load]
+	98 -> 97
+	99 [label=Name]
+	99 -> 96
+	100 [label=Load]
+	100 -> 99
+	101 [label=Load]
+	101 -> 96
+	102 [label=FunctionDef]
+	102 -> 0
+	103 [label=arguments]
+	103 -> 102
+	104 [label=arg]
+	104 -> 103
+	105 [label=arg]
+	105 -> 103
+	106 [label=Assign]
+	106 -> 102
+	107 [label=Name]
+	107 -> 106
+	108 [label=Store]
+	108 -> 107
+	109 [label=Call]
+	109 -> 106
+	110 [label=Name]
+	110 -> 109
+	111 [label=Load]
+	111 -> 110
+	112 [label=Expr]
+	112 -> 102
+	113 [label=Call]
+	113 -> 112
+	114 [label=Attribute]
+	114 -> 113
+	115 [label=Name]
+	115 -> 114
+	116 [label=Load]
+	116 -> 115
+	117 [label=Load]
+	117 -> 114
+	118 [label=Constant]
+	118 -> 113
+	119 [label=keyword]
+	119 -> 113
+	120 [label=Constant]
+	120 -> 119
+	121 [label=Expr]
+	121 -> 102
+	122 [label=Call]
+	122 -> 121
+	123 [label=Attribute]
+	123 -> 122
+	124 [label=Name]
+	124 -> 123
+	125 [label=Load]
+	125 -> 124
+	126 [label=Load]
+	126 -> 123
+	127 [label=Constant]
+	127 -> 122
+	128 [label=keyword]
+	128 -> 122
+	129 [label=Constant]
+	129 -> 128
+	130 [label=Expr]
+	130 -> 102
+	131 [label=Call]
+	131 -> 130
+	132 [label=Attribute]
+	132 -> 131
+	133 [label=Name]
+	133 -> 132
+	134 [label=Load]
+	134 -> 133
+	135 [label=Load]
+	135 -> 132
+	136 [label=Constant]
+	136 -> 131
+	137 [label=keyword]
+	137 -> 131
+	138 [label=Constant]
+	138 -> 137
+	139 [label=Expr]
+	139 -> 102
+	140 [label=Call]
+	140 -> 139
+	141 [label=Attribute]
+	141 -> 140
+	142 [label=Name]
+	142 -> 141
+	143 [label=Load]
+	143 -> 142
+	144 [label=Load]
+	144 -> 141
+	145 [label=Constant]
+	145 -> 140
+	146 [label=keyword]
+	146 -> 140
+	147 [label=Constant]
+	147 -> 146
+	148 [label=Expr]
+	148 -> 102
+	149 [label=Call]
+	149 -> 148
+	150 [label=Attribute]
+	150 -> 149
+	151 [label=Name]
+	151 -> 150
+	152 [label=Load]
+	152 -> 151
+	153 [label=Load]
+	153 -> 150
+	154 [label=Constant]
+	154 -> 149
+	155 [label=keyword]
+	155 -> 149
+	156 [label=Constant]
+	156 -> 155
+	157 [label=Expr]
+	157 -> 102
+	158 [label=Call]
+	158 -> 157
+	159 [label=Attribute]
+	159 -> 158
+	160 [label=Name]
+	160 -> 159
+	161 [label=Load]
+	161 -> 160
+	162 [label=Load]
+	162 -> 159
+	163 [label=Constant]
+	163 -> 158
+	164 [label=keyword]
+	164 -> 158
+	165 [label=Constant]
+	165 -> 164
+	166 [label=Expr]
+	166 -> 102
+	167 [label=Call]
+	167 -> 166
+	168 [label=Attribute]
+	168 -> 167
+	169 [label=Name]
+	169 -> 168
+	170 [label=Load]
+	170 -> 169
+	171 [label=Load]
+	171 -> 168
+	172 [label=Constant]
+	172 -> 167
+	173 [label=keyword]
+	173 -> 167
+	174 [label=Constant]
+	174 -> 173
+	175 [label=Expr]
+	175 -> 102
+	176 [label=Call]
+	176 -> 175
+	177 [label=Name]
+	177 -> 176
+	178 [label=Load]
+	178 -> 177
+	179 [label=Assign]
+	179 -> 102
+	180 [label=Name]
+	180 -> 179
+	181 [label=Store]
+	181 -> 180
+	182 [label=Call]
+	182 -> 179
+	183 [label=Name]
+	183 -> 182
+	184 [label=Load]
+	184 -> 183
+	185 [label=Call]
+	185 -> 182
+	186 [label=Name]
+	186 -> 185
+	187 [label=Load]
+	187 -> 186
+	188 [label=Name]
+	188 -> 182
+	189 [label=Load]
+	189 -> 188
+	190 [label=keyword]
+	190 -> 182
+	191 [label=Tuple]
+	191 -> 190
+	192 [label=Attribute]
+	192 -> 191
+	193 [label=Name]
+	193 -> 192
+	194 [label=Load]
+	194 -> 193
+	195 [label=Load]
+	195 -> 192
+	196 [label=Attribute]
+	196 -> 191
+	197 [label=Name]
+	197 -> 196
+	198 [label=Load]
+	198 -> 197
+	199 [label=Load]
+	199 -> 196
+	200 [label=Load]
+	200 -> 191
+	201 [label=Return]
+	201 -> 102
+	202 [label=Name]
+	202 -> 201
+	203 [label=Load]
+	203 -> 202
+}
