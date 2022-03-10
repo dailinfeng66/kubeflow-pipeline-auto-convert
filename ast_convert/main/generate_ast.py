@@ -1,12 +1,59 @@
 import ast
-from _ast import Call, FunctionDef, Return
+from _ast import Return
 from typing import Any
 
 import astunparse
 from astroid import Import, ImportFrom
-from logddd import log
 
-from main.code_handle import reduction_params, handle_decorators
+
+def reduction_params(old_params):
+    """
+        还原一个方法原来的参数
+    :param old_params:  传入的是原来参数的参数名
+    :return: 返回的是形成的参数还原代码的
+    """
+    code_str = ""
+    for param in old_params:
+        single_statement = f"{param} = joblib.load({param}_input.path)[\"{param}\"]\n"
+        code_str += single_statement
+    r_node = ast.parse(code_str)
+    origin_params_node = []
+    for item in r_node.body:
+        class_name = item.__class__.__name__
+        if class_name == "Assign":
+            origin_params_node.append(item)
+    return origin_params_node
+    # print(astunparse.dump(r_node))
+
+
+def handle_decorators(file_name, packages):
+    """
+        形成方法上面组件注解的代码
+    :param file_name:
+    :param packages:
+    :return:
+    """
+    # print(packages)
+    # @component(output_component_file='fun1min_component.yaml',packages_to_install=['lmfit', 'numpy', 'matplotlib', 'joblib', 'pandas', ])
+    install_package = ""
+    for index, package in enumerate(packages):
+        if index != len(packages) - 1:
+            install_package += "'" + package + "',"
+        else:
+            install_package += "'" + package + "'"
+    #         \ndef func():\n    pass 这一段要加才是一个不会编译出错的语法，才能够parse
+    code = f"@component(output_component_file='{file_name}',packages_to_install=[{install_package}])\ndef func():\n    pass"
+    # print(code)
+    r_node = ast.parse(code)
+    for item in r_node.body:
+        class_name = item.__class__.__name__
+        # print(class_name)
+        # 找到装饰器的list，装饰器的节点是在FunctionDef里
+        if class_name == "FunctionDef":
+            return item.decorator_list
+    # print(astunparse.dump(r_node))
+    return None
+
 
 """
     处理方法代码
@@ -28,7 +75,7 @@ class CodeTransformer(ast.NodeTransformer):
     # 存储导包节点，用于转移到下
     imports = []
     # 存储第三方包的名字，用于装饰器的添加
-    imports_names = []
+    imports_names = ["joblib"]
     # 保存当前方法
     current_func = None
     # 存储当前方法的名字
@@ -103,7 +150,7 @@ class CodeTransformer(ast.NodeTransformer):
         for arg in node.args.args:
             old_args.append(arg.arg)
             # 修改形参的定义语句，并在后面加上参数的type
-            arg.arg = arg.arg + "_input:input[DataSet]"
+            arg.arg = arg.arg + "_input:Input[Dataset]"
 
             # 设置参数后面的type为None
             arg.annotation = None
@@ -112,7 +159,7 @@ class CodeTransformer(ast.NodeTransformer):
             给方法添加返回的元数据参数
         """
         output = ast.arg()  # 这是一个arg对象
-        output.arg = node.name + "_output:[DataSet]"
+        output.arg = node.name + "_output:Output[Dataset]"
         output.annotation = None
         new_args.append(output)
 
@@ -201,6 +248,14 @@ if __name__ == '__main__':
     res = transformer.visit(r_node)
     # print(astunparse.dump(r_node))
     source = astunparse.unparse(res)  # astunparse 一般python不自带，需要conda 或者 pip安装
-    component_import = "import kfp\nfrom kfp.v2 import dsl\nfrom kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath\nimport kfp.components as comp\n"
+    component_import = "import kfp\n" \
+                       "from kfp.v2 import dsl\n" \
+                       "from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath\n" \
+                       "import kfp.components as comp\n"
     source = component_import + source
     print(source)
+    with open("res.py", "w") as w:
+        w.write(source)
+        w.close()
+    # cm = compile(source, '<string>', 'exec')
+    # exec(cm)
