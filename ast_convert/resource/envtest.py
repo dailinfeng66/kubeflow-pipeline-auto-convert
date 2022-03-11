@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 
 
-# @component(output_component_file='fun1min_component.yaml',packages_to_install=['lmfit','numpy','matplotlib','joblib','pandas',])
 def load_data(url, filename: str, url1: int = 10) -> (int, int):
     f = requests.get(url)
     with open(filename, 'wb') as code:

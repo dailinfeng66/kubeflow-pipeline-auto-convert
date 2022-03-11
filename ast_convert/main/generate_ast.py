@@ -246,8 +246,9 @@ if __name__ == '__main__':
     read_by_self(r_node)
     transformer = CodeTransformer()
     res = transformer.visit(r_node)
-    # print(astunparse.dump(r_node))
+    print(astunparse.dump(r_node))
     source = astunparse.unparse(res)  # astunparse 一般python不自带，需要conda 或者 pip安装
+    # 在文件顶部添加导包语句
     component_import = "import kfp\n" \
                        "from kfp.v2 import dsl\n" \
                        "from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath\n" \
