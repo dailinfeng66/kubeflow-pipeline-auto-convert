@@ -57,7 +57,7 @@ def handle_decorators(file_name, packages):
 
 """
     处理方法代码
-        将需要引入的kubeflow SDK的import代码添加到文件上面
+        ✅将需要引入的kubeflow SDK的import代码添加到文件上面
         ✅将import代码添加到方法定义语句的下一行,包括joblib包的添加
         ✅将方法参数修改为元数据形式并添加输出元数据
         ❓删除方法返回type  暂时没有找到方法返回类型声明对应的node节点  找到了 对象是returns  返回值是Return
