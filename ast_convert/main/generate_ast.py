@@ -238,15 +238,12 @@ def read_by_self(r_node):
             func_dict[node.name] = copy.deepcopy(node)
 
 
-if __name__ == '__main__':
-    with open("../resource/envtest.py") as f:
-        code = f.read()
+def get_components():
     # 首先遍历出当前源文件的方法字典
     r_node = ast.parse(code)
     read_by_self(r_node)
     transformer = CodeTransformer()
     res = transformer.visit(r_node)
-    print(astunparse.dump(r_node))
     source = astunparse.unparse(res)  # astunparse 一般python不自带，需要conda 或者 pip安装
     # 在文件顶部添加导包语句
     component_import = "import kfp\n" \
@@ -254,9 +251,14 @@ if __name__ == '__main__':
                        "from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath\n" \
                        "import kfp.components as comp\n"
     source = component_import + source
-    print(source)
     with open("res.py", "w") as w:
         w.write(source)
         w.close()
+
+
+if __name__ == '__main__':
+    with open("../resource/envtest.py") as f:
+        code = f.read()
+    get_components(code)
     # cm = compile(source, '<string>', 'exec')
     # exec(cm)

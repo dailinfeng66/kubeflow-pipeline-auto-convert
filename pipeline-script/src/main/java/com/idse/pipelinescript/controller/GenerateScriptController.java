@@ -36,4 +36,5 @@ public class GenerateScriptController {
     public ResponseData generatePipeline(@RequestBody Pipeline pipeline) throws IOException {
         return ResponseDataUtil.buildSuccess(generateScriptService.generateYaml(pipeline));
     }
+
 }
