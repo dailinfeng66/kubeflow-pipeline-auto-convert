@@ -5,6 +5,7 @@ from typing import Any
 
 import astunparse
 from astroid import Import, ImportFrom
+import copy
 
 
 def reduction_params(old_params):
@@ -56,6 +57,31 @@ def handle_decorators(file_name, packages):
     return None
 
 
+# 存储当前源文件中的方法，key为方法名 value为方法节点
+func_dict = dict({})
+# 保存当前源代码内的类代码
+class_def_dict = dict({})
+
+
+# 自己读取的方式
+def read_by_self(r_node):
+    # 遍历每一个node
+    for node in r_node.body:
+        node_name = type(node).__name__
+        # 如果是方法定义的节点
+        if node_name == "FunctionDef":
+            # 这儿要用深拷贝，不然node节点是相同的，方法参数修改时方法内的方法代码也会被修改
+            func_dict[node.name] = copy.deepcopy(node)
+            transformer = CodeTransformer()
+            res = transformer.visit(node)
+            source = astunparse.unparse(res)
+            print(source)
+
+        #     如果这是类定义的节点
+        if node_name == "ClassDef":
+            class_def_dict[node_name] = copy.deepcopy(node)
+
+
 """
     处理方法代码
         ✅将需要引入的kubeflow SDK的import代码添加到文件上面
@@ -68,8 +94,6 @@ def handle_decorators(file_name, packages):
             🚫 所有的返回值都必须是变量而不能是其他的表达式或者是方法的调用
         ✅扫描当前方法调用了那些方法，并将这些方法添加到当前方法中
 """
-# 存储当前源文件中的方法，key为方法名 value为方法节点
-func_dict = dict({})
 
 
 class CodeTransformer(ast.NodeTransformer):
@@ -83,6 +107,20 @@ class CodeTransformer(ast.NodeTransformer):
     cur_func_name = ""
     # 保存当前方法调用的方法名
     call_func = set([])
+
+    # # 保存当前源代码内的类代码
+    # class_def_dict = dict({})
+
+    # def visit_ClassDef(self, node):
+    #     """
+    #     遍历所有的类定义
+    #    类的定义扫描不写在这里是有原因的，因为如果类是内部类也会被当作是外部类被扫描到
+    #     :param node:
+    #     :return:
+    #     """
+    #     class_node = copy.deepcopy(node)
+    #     class_name = node.name
+    #     self.class_def_dict[class_name] = class_node
 
     def visit_Import(self, node: Import):
         """
@@ -135,6 +173,7 @@ class CodeTransformer(ast.NodeTransformer):
     def visit_FunctionDef(self, node):
         # 当前方法的名字
         self.cur_func_name = node.name
+        print(node.name)
         """
         扫描方法节点
         :param node:
@@ -177,6 +216,9 @@ class CodeTransformer(ast.NodeTransformer):
         for func in self.call_func:
             if func in func_dict.keys():
                 func_node_list.append(func_dict[func])
+            #     如果当前方法是类定义代码的调用
+            if func in class_def_dict.keys():
+                func_node_list.append(class_def_dict[func])
 
         # 方法原参数的加载
 
@@ -212,54 +254,43 @@ class CodeTransformer(ast.NodeTransformer):
         :return:
         """
         self.generic_visit(node)
-        # print(node.func.value.id)
+
         if hasattr(node.func, "value"):
-            # print(node.func.value.id)
+            # print("call_func_name value:" + node.func.value.id)
             pass
-        #  有name的才是单个方法的调用
-        # if hasattr(node.func, "name"):
         else:
             cal_name = node.func.id
-            # print("call_func_name:" + cal_name)
+            # print("call_func_name id:" + cal_name)
             self.call_func.add(cal_name)
         return node
-
-
-import copy
-
-
-# 自己读取的方式
-def read_by_self(r_node):
-    # 遍历每一个node
-    for node in r_node.body:
-        node_name = type(node).__name__
-        # 如果是方法定义的节点
-        if node_name == "FunctionDef":
-            # 这儿要用深拷贝，不然node节点是相同的，方法参数修改时方法内的方法代码也会被修改
-            func_dict[node.name] = copy.deepcopy(node)
 
 
 def get_components(code, save_path):
     # 首先遍历出当前源文件的方法字典
     r_node = ast.parse(code)
+    print(astunparse.dump(r_node))
     read_by_self(r_node)
-    transformer = CodeTransformer()
-    res = transformer.visit(r_node)
-    source = astunparse.unparse(res)  # astunparse 一般python不自带，需要conda 或者 pip安装
-    # 在文件顶部添加导包语句
-    component_import = "import kfp\n" \
-                       "from kfp.v2 import dsl\n" \
-                       "from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath\n" \
-                       "import kfp.components as comp\n"
-    source = component_import + source
-    with open(save_path, "w") as w:
-        w.write(source)
-        w.close()
+    # transformer = CodeTransformer()
+    # res = transformer.visit(r_node)
+    # source = astunparse.unparse(res)  # astunparse 一般python不自带，需要conda 或者 pip安装
+    # # 在文件顶部添加导包语句
+    # component_import = "import kfp\n" \
+    #                    "from kfp.v2 import dsl\n" \
+    #                    "from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath\n" \
+    #                    "import kfp.components as comp\n"
+    # source = component_import + source
+    # print(source)
+    # with open(save_path, "w") as w:
+    #     w.write(source)
+    #     w.close()
 
 
 if __name__ == '__main__':
-    file_path = sys.argv[1]
-    save_path = sys.argv[2]
+    # file_path = sys.argv[1]
+    # save_path = sys.argv[2]
+    file_path = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/ast_convert/resource/classtest.py"
+    # file_path = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/ast_convert/resource/envtest.py"
+    save_path = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/ast_convert/resource/res.py"
     with open(file_path) as f:
         code = f.read()
     get_components(code, save_path)
