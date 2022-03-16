@@ -1,4 +1,5 @@
 import ast
+import sys
 from _ast import Return
 from typing import Any
 
@@ -238,7 +239,7 @@ def read_by_self(r_node):
             func_dict[node.name] = copy.deepcopy(node)
 
 
-def get_components():
+def get_components(code, save_path):
     # 首先遍历出当前源文件的方法字典
     r_node = ast.parse(code)
     read_by_self(r_node)
@@ -251,14 +252,17 @@ def get_components():
                        "from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath\n" \
                        "import kfp.components as comp\n"
     source = component_import + source
-    with open("res.py", "w") as w:
+    with open(save_path, "w") as w:
         w.write(source)
         w.close()
 
 
 if __name__ == '__main__':
-    with open("../resource/envtest.py") as f:
+    file_path = sys.argv[1]
+    save_path = sys.argv[2]
+    with open(file_path) as f:
         code = f.read()
-    get_components(code)
+    get_components(code, save_path)
+
     # cm = compile(source, '<string>', 'exec')
     # exec(cm)

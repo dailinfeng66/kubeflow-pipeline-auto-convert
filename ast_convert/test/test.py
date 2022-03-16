@@ -1,15 +1,9 @@
-import ast
-
-import astunparse
+import sys
 
 if __name__ == '__main__':
-    code_str = "xdata = joblib.load(xdata_inputpath.path)\n" \
-               "ydata = joblib.load(ydata_inputpath.path)\n"
-    r_node = ast.parse(code_str)
-    origin_params_node = []
-    for item in r_node.body:
-        class_name = item.__class__.__name__
-        if class_name == "Assign":
-            origin_params_node.append(item)
-
-    print(astunparse.dump(r_node))
+    print('参数个数为:', len(sys.argv), '个参数。')
+    print('参数列表:', str(sys.argv))
+    print('脚本名为：', sys.argv[0])
+    print(sys.argv[1])
+    # for i in range(1, len(sys.argv)):
+    #     print('参数 %s 为：%s' % (i, sys.argv[i]))

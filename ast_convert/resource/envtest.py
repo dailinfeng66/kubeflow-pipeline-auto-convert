@@ -3,13 +3,15 @@ import numpy as np
 import pandas as pd
 
 
-def load_data(url, filename: str, url1: int = 10) -> (int, int):
+# 方法的定义语句，定义方法声明参数，参数可以是变量名
+def load_data(url, filename: str, url1: int = 10):
     f = requests.get(url)
     with open(filename, 'wb') as code:
         code.write(f.content)
     a = pd.read_excel(filename)
     xdata = a[['t', 'X_t_1', 'X_t_2', 't_T_1_X_t_1', 't_T_2_X_t_2', 'H_t', 'ck1', 'sk1', 'ck2', 'sk2']]
     ydata = np.log(a["Y"])
+    #  方法的返回结果，只能够是返回一个或多个变量的形式
     return xdata, ydata
 
 

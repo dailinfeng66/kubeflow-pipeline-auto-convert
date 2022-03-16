@@ -19,14 +19,6 @@ public interface GenerateScriptService {
     String generateComponent(String filePath) throws IOException, InterruptedException;
 
     /**
-     * 添加方法调用方法的转换
-     *
-     * @param codes
-     * @return
-     */
-    List<String> addReferency(List<String> codes, List<String> initialCodes, List<String> importList);
-
-    /**
      * 调用python方法
      * @param command
      * @return
