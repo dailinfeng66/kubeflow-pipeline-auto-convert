@@ -49,7 +49,7 @@ def search_py_file(path):
 
 if __name__ == '__main__':
     global_param_init()
-    # file_path = "/Users/dailinfeng/Desktop/小项目/爬虫/政府来电爬虫"
+    # file_path = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/ast_convert/resource/inittest"
     file_path = "/Users/dailinfeng/Desktop/小项目/auto-sklearn"
     # 传入空的list接收文件名
     pre_search_py_file(file_path)

@@ -1,4 +1,5 @@
 import ast
+import gc
 import sys
 from _ast import Return
 from typing import Any
@@ -95,9 +96,9 @@ def read_by_self(r_node):
 
 class CodeTransformer(ast.NodeTransformer):
     # 存储导包节点，用于转移到下
-    imports = []
+    imports = set([])
     # 存储第三方包的名字，用于装饰器的添加
-    imports_names = ["joblib"]
+    imports_names = set(["joblib"])
     # 保存当前方法
     current_func = None
     # 存储当前方法的名字
@@ -126,8 +127,9 @@ class CodeTransformer(ast.NodeTransformer):
         :param node:
         :return:
         """
-        self.imports_names.append(node.names[0].name)
-        self.imports.append(node)
+
+        self.imports_names.add(node.names[0].name)
+        self.imports.add(node)
         return node
 
     def visit_ImportFrom(self, node: ImportFrom):
@@ -136,8 +138,8 @@ class CodeTransformer(ast.NodeTransformer):
         :param node:
         :return:
         """
-        self.imports.append(node)
-        self.imports_names.append(node.module)
+        self.imports.add(node)
+        self.imports_names.add(node.module)
         return node
 
     def visit_Return(self, node: Return):
@@ -245,7 +247,7 @@ class CodeTransformer(ast.NodeTransformer):
         decorator = handle_decorators(node.name + "_component.yaml", self.imports_names)
         node.decorator_list = decorator  # 设置装饰器
 
-        node.body = self.imports + [joblib_module] + func_node_list + params + node.body
+        node.body = list(set(self.imports)) + [joblib_module] + func_node_list + params + node.body
 
         # 将当前方法调用的方法列表置为空
         self.call_func = set([])
@@ -276,8 +278,14 @@ def get_components(code, save_path):
     # print(astunparse.dump(r_node))
     # read_by_self(r_node)
     transformer = CodeTransformer()
+    # print("转换文件" + str(len(transformer.imports)))
+    transformer.imports = set([])
+    transformer.imports_names = set(["joblib"])
+    transformer.current_func = None
+    transformer.cur_func_name = ""
+    transformer.call_func = set([])
     res = transformer.visit(r_node)
-    transformer.imports = []
+
     source = astunparse.unparse(res)  # astunparse 一般python不自带，需要conda 或者 pip安装
     # 在文件顶部添加导包语句
     component_import = "import kfp\n" \

@@ -3,8 +3,6 @@ import sys
 from _ast import Return
 from typing import Any
 
-
-
 from transcode.params_save_util import get_func_dict, get_class_def_dict
 
 
@@ -68,7 +66,7 @@ class ClassTransformer(ast.NodeTransformer):
         if hasattr(node.func, "value"):
             # print("call_func_name value:" + node.func.value.id)
             pass
-        elif hasattr(node.func,"id"):
+        elif hasattr(node.func, "id"):
             cal_name = node.func.id
             # print("call_func_name id:" + cal_name)
             self.call_func.add(cal_name)
