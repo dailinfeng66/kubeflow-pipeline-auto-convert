@@ -18,7 +18,7 @@ def pre_search_py_file(path):
         # 判断是否是文件夹
         if os.path.isdir(cur_path):
             pre_search_py_file(cur_path)
-        elif file.endswith(".py"):
+        elif file.endswith(".py") and not file.endswith("_res.py"):
             # 如果是py文件就对其进行处理
             save_path = os.path.join(path, file.replace(".py", "_res.py"))
             # transfer(cur_path, save_path)
@@ -40,17 +40,22 @@ def search_py_file(path):
         # 判断是否是文件夹
         if os.path.isdir(cur_path):
             search_py_file(cur_path)
-        elif file.endswith(".py"):
+        elif file.endswith(".py") and not file.endswith("_res.py"):
             # 如果是py文件就对其进行处理
             save_path = os.path.join(path, file.replace(".py", "_res.py"))
             print('转换文件' + cur_path)
-            transfer(cur_path, save_path)
+            # transfer(cur_path, save_path)
+            try:
+                transfer(cur_path, save_path)
+            except Exception as e:
+                print(e)
 
 
 if __name__ == '__main__':
     global_param_init()
     # file_path = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/ast_convert/resource/inittest"
-    file_path = "/Users/dailinfeng/Desktop/小项目/auto-sklearn"
+    # file_path = "/Users/dailinfeng/Desktop/小项目/auto-sklearn"
+    file_path = "/Users/dailinfeng/Desktop/小项目/scikit-learn"
     # 传入空的list接收文件名
     pre_search_py_file(file_path)
     # 遍历类的节点map 对类的每一个方法进行处理

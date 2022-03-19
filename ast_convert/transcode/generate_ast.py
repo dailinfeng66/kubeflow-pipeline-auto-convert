@@ -42,7 +42,11 @@ def handle_decorators(file_name, packages):
     # print(packages)
     # @component(output_component_file='fun1min_component.yaml',packages_to_install=['lmfit', 'numpy', 'matplotlib', 'joblib', 'pandas', ])
     install_package = ""
+    if packages is None:
+        return None
     for index, package in enumerate(packages):
+        if package is None:
+            continue
         if index != len(packages) - 1:
             install_package += "'" + package + "',"
         else:
