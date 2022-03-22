@@ -65,8 +65,20 @@ def handle_decorators(file_name, packages):
     return None
 
 
-# 自己读取的方式
-def read_by_self(r_node):
+def pre_ergodic(r_node):
+    """
+     获取扫描当前项目所有的方法和类，并且将他们所需要import的包存起来
+    :param r_node:
+    :return:
+    """
+    # 保存当前py文件的import语句节点
+    import_nodes = []
+    # 首先扫描所有的import语句，将这些语句保存到一个import语句节点列表中去
+    for node in r_node.body:
+        node_name = type(node).__name__
+        if node_name == "Import" or node_name == "ImportFrom":
+            import_nodes.append(copy.deepcopy(node))
+
     # 遍历每一个node
     for node in r_node.body:
         node_name = type(node).__name__
@@ -74,13 +86,20 @@ def read_by_self(r_node):
         if node_name == "FunctionDef":
             # 这儿要用深拷贝，不然node节点是相同的，方法参数修改时方法内的方法代码也会被修改
             func_dict = get_func_dict()
-            func_dict[node.name] = copy.deepcopy(node)
+            item = {
+                "imports": import_nodes,
+                "func": copy.deepcopy(node)
+            }
+            func_dict[node.name] = item
             set_func_dict(func_dict)
-        #     如果这是类定义的节点
 
         if node_name == "ClassDef":
             class_def_dict = get_class_def_dict()
-            class_def_dict[node.name] = copy.deepcopy(node)
+            item = {
+                "imports": import_nodes,
+                "class": copy.deepcopy(node)
+            }
+            class_def_dict[node.name] = item
             set_class_def_dict(class_def_dict)
 
 
@@ -221,16 +240,21 @@ class CodeTransformer(ast.NodeTransformer):
             遍历
         """
         func_node_list = []  # 当前方法所调用方法的节点列表
+        imports_list = []  # 保存当前方法调用方法所依赖的包
         # 遍历当前方法调用的方法列表，检测这些方法是否在当前源文件的方法字典中，如果在的话就将方法node添加到当前方法调用的方法列表中
         for func in self.call_func:
             func_dict = get_func_dict()
             if func in func_dict.keys():
-                func_node_list.append(func_dict[func])
+                func_node_list.append(func_dict[func]['func'])
+                imports_list += func_dict[func]["imports"]
             #     如果当前方法是类定义代码的调用
             class_def_dict = get_class_def_dict()
             if func in class_def_dict.keys():
-                func_node_list.append(class_def_dict[func])
-
+                func_node_list.append(class_def_dict[func]['class'])
+                imports_list += class_def_dict[func]["imports"]
+        """
+            到此，当前方法使用了那些方法就明确了。保存在func_node_list之中，
+        """
         # 方法原参数的加载
 
         """ 
@@ -250,8 +274,9 @@ class CodeTransformer(ast.NodeTransformer):
         # 获取方法定义代码上组件装饰器代码
         decorator = handle_decorators(node.name + "_component.yaml", self.imports_names)
         node.decorator_list = decorator  # 设置装饰器
-
-        node.body = list(set(self.imports)) + [joblib_module] + func_node_list + params + node.body
+        # print(list(set(imports_list)))
+        node.body = list(set(self.imports)) + list(set(imports_list)) + [
+            joblib_module] + func_node_list + params + node.body
 
         # 将当前方法调用的方法列表置为空
         self.call_func = set([])

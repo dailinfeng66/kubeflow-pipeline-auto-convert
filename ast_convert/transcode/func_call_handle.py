@@ -6,9 +6,10 @@ from typing import Any
 from transcode.params_save_util import get_func_dict, get_class_def_dict
 
 
-class ClassTransformer(ast.NodeTransformer):
+class FuncCallTransformer(ast.NodeTransformer):
     """
         目的：
+            扫描传入的方法节点，
             将类中方法所调用的方法添加到类中的方法中来
             并且将这些方法这些类所需要的第三方包也引入进来
     """

@@ -4,11 +4,18 @@ import os
 from platform import node
 
 from transcode.class_func_handle import ClassTransformer
-from transcode.generate_ast import transfer, CodeTransformer, read_by_self
-from transcode.params_save_util import global_param_init, get_class_def_dict, set_class_def_dict
+from transcode.func_call_handle import FuncCallTransformer
+from transcode.generate_ast import transfer, CodeTransformer, pre_ergodic
+from transcode.params_save_util import global_param_init, get_class_def_dict, set_class_def_dict, get_func_dict, \
+    set_func_dict
 
 
 def pre_search_py_file(path):
+    """
+            读取当前项目中所有的类和所有的方法，把这些类和方法分别保存，以供后用
+    :param path:
+    :return:
+    """
     # 首先遍历当前目录所有文件及文件夹
     file_list = os.listdir(path)
     # 准备循环判断每个元素是否是文件夹还是文件，是文件的话，把名称传入list，是文件夹的话，递归
@@ -19,14 +26,13 @@ def pre_search_py_file(path):
         if os.path.isdir(cur_path):
             pre_search_py_file(cur_path)
         elif file.endswith(".py") and not file.endswith("_res.py"):
-            # 如果是py文件就对其进行处理
-            save_path = os.path.join(path, file.replace(".py", "_res.py"))
-            # transfer(cur_path, save_path)
             with open(cur_path) as f:
                 code = f.read()
             r_node = ast.parse(code)
             print("读取文件" + cur_path)
-            read_by_self(r_node)
+            # 这个方法的作用是读取当前项目中所有的类和所有的方法，并将他们保存到一个具体的地方
+            pre_ergodic(r_node)
+
             # print('转换了文件' + save_path)
 
 
@@ -56,16 +62,23 @@ if __name__ == '__main__':
     # file_path = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/ast_convert/resource/inittest"
     # file_path = "/Users/dailinfeng/Desktop/小项目/auto-sklearn"
     file_path = "/Users/dailinfeng/Desktop/小项目/scikit-learn"
-    # 传入空的list接收文件名
+    # 传入空的list接收文件名，获取当前项目所有的fun和class
     pre_search_py_file(file_path)
-    # 遍历类的节点map 对类的每一个方法进行处理
+
+    # 遍历类的节点map 对类的每一个方法进行处理，具体处理内容就是将类中方法所依赖的方法引进来并将其依赖的第三方包引入
     class_def_dict = get_class_def_dict()
     transformer = ClassTransformer()
-
     for node in class_def_dict.keys():
-        visit = transformer.visit(class_def_dict[node])
-        class_def_dict[node] = visit
+        visit = transformer.visit(class_def_dict[node]['class'])
+        class_def_dict[node]['class'] = visit
+    # 扫描每一个方法，将每一个方法所调用的方法都获取到并添加到方法节点中
+    func_dict = get_func_dict()
+    for node in func_dict.keys():
+        funcCallTransformer = FuncCallTransformer()
+        transformer_visit = funcCallTransformer.visit(func_dict[node]['func'])
+        func_dict[node]['func'] = transformer_visit
 
+    set_func_dict(func_dict)
     set_class_def_dict(class_def_dict)
     # 循环打印show_files函数返回的文件名列表
     search_py_file(file_path)
