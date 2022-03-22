@@ -3,7 +3,7 @@ import sys
 from _ast import Return
 from typing import Any
 
-from transcode.params_save_util import get_func_dict, get_class_def_dict
+from params_save_util import get_func_dict, get_class_def_dict
 
 
 class ClassTransformer(ast.NodeTransformer):

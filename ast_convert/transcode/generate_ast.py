@@ -8,8 +8,8 @@ import astunparse
 from astroid import Import, ImportFrom
 import copy
 
-from transcode.class_func_handle import ClassTransformer
-from transcode.params_save_util import get_func_dict, get_class_def_dict, set_func_dict, set_class_def_dict
+from class_func_handle import ClassTransformer
+from params_save_util import get_func_dict, get_class_def_dict, set_func_dict, set_class_def_dict
 
 
 def reduction_params(old_params):
@@ -115,9 +115,44 @@ def pre_ergodic(r_node):
             🚫 所有的返回值都必须是变量而不能是其他的表达式或者是方法的调用
         ✅扫描当前方法调用了那些方法，并将这些方法添加到当前方法中
 """
+def visit_Return( node: Return,cur_func_name):
 
+    """
+    扫描方法的返回值
+    一个方法会先到这儿
+    :param node:
+    :return:
+    """
+    # 反向获取返回值的代码
+    return_code = astunparse.unparse(node).replace("return", "")
+    # 当返回值有多个时，ast会自动给返回的值转变为一个元组，因此需要删除元组的括号
+    return_code = return_code.replace("(", "").replace(")", "").strip()
+    # print(return_code)
+    return_params = return_code.split(",")
+    # return joblib.dump({"model":model},funcname_output.path)
+    dict_str = ""
+    for index, param in enumerate(return_params):
+        # 主要是为了不报错
+        param = param.replace("\"", "").replace("'", "").replace("\\", "").replace("\n", "").replace("=", "")
+        if index < len(return_params) - 1:
+            dict_str += f"\"{param}\":{param},"
+        else:
+            dict_str += f"\"{param}\":{param}"
+    return_wrap_code = "return joblib.dump({" + dict_str + "}," + f"{cur_func_name}_output.path)"
+    # print(return_wrap_code)
+    try:
+        r_node = ast.parse(return_wrap_code)
+        return r_node.body[0]  # 返回新生成的node来替换原来的Return的node
+    except Exception as e:
+        print(e)
+    return None
+        #     如果出错就直接不返回
+        # print(astunparse.dump(r_node))
+        # return node  # 不要返回就表示遍历这个node之后不返回这个node  ----> 删除这个node
 
 class CodeTransformer(ast.NodeTransformer):
+    # 记录当前代码有几个方法定义，当扫描到方法的时候只对这几个方法定义代码的方法进行转换
+    code_func_names = []
     # 存储导包节点，用于转移到下
     imports = set([])
     # 存储第三方包的名字，用于装饰器的添加
@@ -129,20 +164,6 @@ class CodeTransformer(ast.NodeTransformer):
     # 保存当前方法调用的方法名
     call_func = set([])
 
-    # # 保存当前源代码内的类代码
-    # class_def_dict = dict({})
-
-    def visit_ClassDef(self, node):
-        """
-        遍历所有的类定义
-            类的定义扫描不写在这里是有原因的，因为如果类是内部类也会被当作是外部类被扫描到
-            这个空方法的作用： 在这一步之前已经记录了类定义的代码 因此在这一步要删除类定义的node，
-            如果不删除的话类方法将被当成普通方法转换为组件方法
-            这一步什么都不返回就删除当前节点了
-        :param node:
-        :return:
-        """
-        pass
 
     def visit_Import(self, node: Import):
         """
@@ -165,52 +186,31 @@ class CodeTransformer(ast.NodeTransformer):
         self.imports_names.add(node.module)
         return node
 
-    def visit_Return(self, node: Return):
 
-        """
-        扫描方法的返回值
-        一个方法会先到这儿
-        :param node:
-        :return:
-        """
-        # 反向获取返回值的代码
-        return_code = astunparse.unparse(node).replace("return", "")
-        # 当返回值有多个时，ast会自动给返回的值转变为一个元组，因此需要删除元组的括号
-        return_code = return_code.replace("(", "").replace(")", "").strip()
-        # print(return_code)
-        return_params = return_code.split(",")
-        # return joblib.dump({"model":model},funcname_output.path)
-        dict_str = ""
-        for index, param in enumerate(return_params):
-            # 主要是为了不报错
-            param = param.replace("\"", "").replace("'", "").replace("\\", "").replace("\n", "").replace("=", "")
-            if index < len(return_params) - 1:
-                dict_str += f"\"{param}\":{param},"
-            else:
-                dict_str += f"\"{param}\":{param}"
-        return_wrap_code = "return joblib.dump({" + dict_str + "}," + f"{self.cur_func_name}_output.path)"
-        # print(return_wrap_code)
-        try:
-            r_node = ast.parse(return_wrap_code)
-            return r_node.body[0]  # 返回新生成的node来替换原来的Return的node
-        except Exception as e:
-            print(e)
-        #     如果出错就直接不返回
-        # print(astunparse.dump(r_node))
-        # return node  # 不要返回就表示遍历这个node之后不返回这个node  ----> 删除这个node
 
     def visit_FunctionDef(self, node):
         # 当前方法的名字
         self.cur_func_name = node.name
+
         """
         扫描方法节点
         :param node:
         :return:
         """
-        self.generic_visit(node)  # 这里表示先去访问里面的children node
+
         """
             替换形参名字
         """
+        self.generic_visit(node)  # 这里表示先去访问里面的children node
+        # 如果当前扫描到的方法不在当前顶层方法中 
+        # 则表示当前扫到的方法是被方法调用的方法，因此不对方法节点进行处理
+        if node.name not in self.code_func_names:
+            return node
+
+        func_dict = get_func_dict()
+        # 之前在对方法扫描的过程中就已经node代码进行一定的修改了，因此将已经修改好的代码先加载过来。
+        node = copy.deepcopy(func_dict[node.name]['func'])
+ 
         # 存储原来的参数,用作后面的参数还原
         old_args = []
         new_args = []
@@ -241,27 +241,15 @@ class CodeTransformer(ast.NodeTransformer):
         """
         func_node_list = []  # 当前方法所调用方法的节点列表
         imports_list = []  # 保存当前方法调用方法所依赖的包
-        # 遍历当前方法调用的方法列表，检测这些方法是否在当前源文件的方法字典中，如果在的话就将方法node添加到当前方法调用的方法列表中
-        for func in self.call_func:
-            func_dict = get_func_dict()
-            if func in func_dict.keys():
-                func_node_list.append(func_dict[func]['func'])
-                imports_list += func_dict[func]["imports"]
-            #     如果当前方法是类定义代码的调用
-            class_def_dict = get_class_def_dict()
-            if func in class_def_dict.keys():
-                func_node_list.append(class_def_dict[func]['class'])
-                imports_list += class_def_dict[func]["imports"]
         """
             到此，当前方法使用了那些方法就明确了。保存在func_node_list之中，
         """
         # 方法原参数的加载
-
         """ 
-                 方法内代码的重新组合
-                 self.imports 导包代码
-                 func_node_list 当前方法所调用的方法的代码
-                 node.body  当前方法本身的代码
+                方法内代码的重新组合
+                self.imports 导包代码
+                func_node_list 当前方法所调用的方法的代码
+                node.body  当前方法本身的代码
         """
         # 添加joblib代码的import
         joblib_module = ast.Import()
@@ -270,14 +258,29 @@ class CodeTransformer(ast.NodeTransformer):
         joblib_alias.asname = None
         joblib_module.names = [joblib_alias]
         # 添加joblib代码的import
+
         params = reduction_params(old_params=old_args)
         # 获取方法定义代码上组件装饰器代码
         decorator = handle_decorators(node.name + "_component.yaml", self.imports_names)
         node.decorator_list = decorator  # 设置装饰器
         # print(list(set(imports_list)))
-        node.body = list(set(self.imports)) + list(set(imports_list)) + [
-            joblib_module] + func_node_list + params + node.body
+        total_imports = list(set(list(self.imports) +imports_list))
+        new_body = []
+        # print(ast.dump(node))
+        
+        # 只对最外层的方法节点进行扫描，扫描到return节点之后直接进行转换
+        for body_item in node.body:
+            node_name = type(body_item).__name__
+            inner_node = body_item
+            # 单独处理return节点 
+            if node_name  == "Return":
+                return_node = visit_Return(body_item,self.cur_func_name)
+                inner_node = copy.deepcopy(return_node)
 
+            if inner_node is not None:
+                new_body.append(inner_node)
+
+        node.body =  total_imports + [joblib_module]  + params + new_body
         # 将当前方法调用的方法列表置为空
         self.call_func = set([])
         return node
@@ -304,15 +307,20 @@ class CodeTransformer(ast.NodeTransformer):
 def get_components(code, save_path):
     # 首先遍历出当前源文件的方法字典
     r_node = ast.parse(code)
-    # print(astunparse.dump(r_node))
-    # read_by_self(r_node)
     transformer = CodeTransformer()
-    # print("转换文件" + str(len(transformer.imports)))
+    #  初始化参数，如果不初始化的话for中的参数会重复使用
     transformer.imports = set([])
     transformer.imports_names = set(["joblib"])
     transformer.current_func = None
     transformer.cur_func_name = ""
     transformer.call_func = set([])
+    transformer.code_func_names = []
+    # print(ast.dump(r_node))
+    # 遍历当前文件的ast，将最外面的方法名获取到，后面对方法进行转换的时候就只转换这一些，其他的就不转换
+    for node in r_node.body:
+        node_name = type(node).__name__
+        if node_name  == "FunctionDef":
+            transformer.code_func_names.append(node.name)
     res = transformer.visit(r_node)
 
     source = astunparse.unparse(res)  # astunparse 一般python不自带，需要conda 或者 pip安装

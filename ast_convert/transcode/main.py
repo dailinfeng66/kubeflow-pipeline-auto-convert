@@ -2,13 +2,15 @@ import ast
 import copy
 import os
 from platform import node
-
-from transcode.class_func_handle import ClassTransformer
-from transcode.func_call_handle import FuncCallTransformer
-from transcode.generate_ast import transfer, CodeTransformer, pre_ergodic
-from transcode.params_save_util import global_param_init, get_class_def_dict, set_class_def_dict, get_func_dict, \
+import astunparse
+from class_func_handle import ClassTransformer
+from func_call_handle import FuncCallTransformer
+from generate_ast import transfer, CodeTransformer, pre_ergodic
+from params_save_util import global_param_init, get_class_def_dict, set_class_def_dict, get_func_dict, \
     set_func_dict
 
+import sys
+sys.setrecursionlimit(2000)
 
 def pre_search_py_file(path):
     """
@@ -61,7 +63,9 @@ if __name__ == '__main__':
     global_param_init()
     # file_path = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/ast_convert/resource/inittest"
     # file_path = "/Users/dailinfeng/Desktop/小项目/auto-sklearn"
-    file_path = "/Users/dailinfeng/Desktop/小项目/scikit-learn"
+    # file_path = "/Users/dailinfeng/Desktop/小项目/scikit-learn"
+    # file_path = "/home/dlf/testCode/scikit-learn"
+    file_path = "/home/dlf/testCode/ast_convert/resource"
     # 传入空的list接收文件名，获取当前项目所有的fun和class
     pre_search_py_file(file_path)
 
@@ -72,12 +76,25 @@ if __name__ == '__main__':
         visit = transformer.visit(class_def_dict[node]['class'])
         class_def_dict[node]['class'] = visit
     # 扫描每一个方法，将每一个方法所调用的方法都获取到并添加到方法节点中
+    new_func_dict = dict({})
     func_dict = get_func_dict()
     for node in func_dict.keys():
         funcCallTransformer = FuncCallTransformer()
+        # 重制参数 ，如果不重制的话会出问题  另一个没有调用A方法的方法会被判定为调用了A方法，将A方法引入
+        funcCallTransformer.call_func = set([])
+        funcCallTransformer.cur_func_name = ""
+        funcCallTransformer.current_func = None
+        # 开始对参数进行转换 
         transformer_visit = funcCallTransformer.visit(func_dict[node]['func'])
+        # 将参数转换之后村
         func_dict[node]['func'] = transformer_visit
-
+        # new_func_dict[node] = {
+        #     "func":copy.deepcopy(transformer_visit),
+        #     "imports":copy.deepcopy(func_dict[node]['imports'])
+        # }
+        source = astunparse.unparse(transformer_visit) 
+        print(source)
+        
     set_func_dict(func_dict)
     set_class_def_dict(class_def_dict)
     # 循环打印show_files函数返回的文件名列表

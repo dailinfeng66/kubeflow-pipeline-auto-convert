@@ -3,7 +3,7 @@ import sys
 from _ast import Return
 from typing import Any
 
-from transcode.params_save_util import get_func_dict, get_class_def_dict
+from params_save_util import get_func_dict, get_class_def_dict
 
 
 class FuncCallTransformer(ast.NodeTransformer):
@@ -22,7 +22,9 @@ class FuncCallTransformer(ast.NodeTransformer):
 
     def visit_FunctionDef(self, node):
         # 当前方法的名字
+
         self.cur_func_name = node.name
+    
         """
         扫描方法节点
         :param node:
@@ -38,14 +40,15 @@ class FuncCallTransformer(ast.NodeTransformer):
         # 存储所调用方法的import节点
         import_list = []
         # 遍历当前方法调用的方法列表，检测这些方法是否在当前源文件的方法字典中，如果在的话就将方法node添加到当前方法调用的方法列表中
+        func_dict = get_func_dict()
+        class_def_dict = get_class_def_dict()
         for func in self.call_func:
-            func_dict = get_func_dict()
             if func in func_dict.keys():
                 func_value = func_dict[func]
                 func_node_list.append(func_value['func'])
                 import_list += func_value['imports']
             # 如果当前方法是类定义代码的调用
-            class_def_dict = get_class_def_dict()
+
             if func in class_def_dict.keys():
                 class_value = class_def_dict[func]
                 func_node_list.append(class_value['class'])
