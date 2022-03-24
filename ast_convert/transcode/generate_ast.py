@@ -151,6 +151,12 @@ def visit_Return( node: Return,cur_func_name):
         # return node  # 不要返回就表示遍历这个node之后不返回这个node  ----> 删除这个node
 
 class CodeTransformer(ast.NodeTransformer):
+    """
+            对一个源文件中的方法进行检测，获取顶层方法所调用的方法。
+            将被调用方法的方法体添加进去   
+            
+    """
+
     # 记录当前代码有几个方法定义，当扫描到方法的时候只对这几个方法定义代码的方法进行转换
     code_func_names = []
     # 存储导包节点，用于转移到下

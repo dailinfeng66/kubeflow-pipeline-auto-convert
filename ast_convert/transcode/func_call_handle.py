@@ -23,7 +23,7 @@ class FuncCallTransformer(ast.NodeTransformer):
     def visit_FunctionDef(self, node):
         # 当前方法的名字
 
-        self.cur_func_name = node.name
+        # self.cur_func_name = node.name
     
         """
         扫描方法节点
@@ -36,6 +36,9 @@ class FuncCallTransformer(ast.NodeTransformer):
             添加当前节点所调用的方法
             遍历
         """
+        # 如果遍历到的节点不是当前节点
+        # if node.name != self.cur_func_name:
+        #     return node
         func_node_list = []  # 当前方法所调用方法的节点列表
         # 存储所调用方法的import节点
         import_list = []
@@ -55,18 +58,13 @@ class FuncCallTransformer(ast.NodeTransformer):
                 import_list += class_value['imports']
 
         # 方法原参数的加载
-
         """ 
                  方法内代码的重新组合
                  self.imports 导包代码
                  func_node_list 当前方法所调用的方法的代码
                  node.body  当前方法本身的代码
         """
-
         node.body = list(set(import_list)) + func_node_list + node.body
-
-        # 将当前方法调用的方法列表置为空
-        self.call_func = set([])
         return node
 
     def visit_Call(self, node) -> Any:

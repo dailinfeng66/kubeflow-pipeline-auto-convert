@@ -14,20 +14,20 @@ class Test():
         aaa_ = (aaa + 1)
         return aaa_
 
-@component(output_component_file='load_data_component.yaml', packages_to_install=['requests', 'numpy', 'pandas', 'argon2', 'joblib'])
+@component(output_component_file='load_data_component.yaml', packages_to_install=['joblib', 'pandas', 'numpy', 'argon2', 'requests'])
 def load_data(url_input:Input[Dataset], filename_input:Input[Dataset], url1_input:Input[Dataset], load_data_output:Output[Dataset]):
-    import numpy as np
-    import pandas as pd
     import requests
+    import numpy as np
     from argon2 import Parameters
+    import pandas as pd
     import joblib
     url = joblib.load(url_input.path)['url']
     filename = joblib.load(filename_input.path)['filename']
     url1 = joblib.load(url1_input.path)['url1']
-    import pandas as pd
-    import requests
     from argon2 import Parameters
+    import pandas as pd
     import numpy as np
+    import requests
 
     class Test():
 
@@ -43,25 +43,25 @@ def load_data(url_input:Input[Dataset], filename_input:Input[Dataset], url1_inpu
     Test()
     return joblib.dump({'xdata': xdata, ' ydata': ydata}, load_data_output.path)
 
-@component(output_component_file='get_model1_component.yaml', packages_to_install=['requests', 'numpy', 'pandas', 'argon2', 'joblib'])
+@component(output_component_file='get_model1_component.yaml', packages_to_install=['joblib', 'pandas', 'numpy', 'argon2', 'requests'])
 def get_model1(xdata_input:Input[Dataset], ydata_input:Input[Dataset], get_model1_output:Output[Dataset]):
-    import numpy as np
-    import pandas as pd
     import requests
+    import numpy as np
     from argon2 import Parameters
+    import pandas as pd
     import joblib
     xdata = joblib.load(xdata_input.path)['xdata']
     ydata = joblib.load(ydata_input.path)['ydata']
-    import pandas as pd
-    import requests
     from argon2 import Parameters
+    import pandas as pd
     import numpy as np
+    import requests
 
     def load_data(url, filename: str, url1: int=10):
-        import pandas as pd
-        import requests
         from argon2 import Parameters
+        import pandas as pd
         import numpy as np
+        import requests
 
         class Test():
 

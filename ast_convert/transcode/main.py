@@ -10,7 +10,7 @@ from params_save_util import global_param_init, get_class_def_dict, set_class_de
     set_func_dict
 
 import sys
-sys.setrecursionlimit(2000)
+sys.setrecursionlimit(6000)
 
 def pre_search_py_file(path):
     """
@@ -68,33 +68,38 @@ if __name__ == '__main__':
     file_path = "/home/dlf/testCode/ast_convert/resource"
     # 传入空的list接收文件名，获取当前项目所有的fun和class
     pre_search_py_file(file_path)
-
+    print("pre_search_py_file 结束")
     # 遍历类的节点map 对类的每一个方法进行处理，具体处理内容就是将类中方法所依赖的方法引进来并将其依赖的第三方包引入
     class_def_dict = get_class_def_dict()
-    transformer = ClassTransformer()
+    
     for node in class_def_dict.keys():
+        transformer = ClassTransformer()
         visit = transformer.visit(class_def_dict[node]['class'])
         class_def_dict[node]['class'] = visit
+    print("class 引用结束")
     # 扫描每一个方法，将每一个方法所调用的方法都获取到并添加到方法节点中
     new_func_dict = dict({})
     func_dict = get_func_dict()
+    
     for node in func_dict.keys():
         funcCallTransformer = FuncCallTransformer()
         # 重制参数 ，如果不重制的话会出问题  另一个没有调用A方法的方法会被判定为调用了A方法，将A方法引入
         funcCallTransformer.call_func = set([])
+        # 设置当前方法的名字
         funcCallTransformer.cur_func_name = ""
         funcCallTransformer.current_func = None
         # 开始对参数进行转换 
-        transformer_visit = funcCallTransformer.visit(func_dict[node]['func'])
-        # 将参数转换之后村
-        func_dict[node]['func'] = transformer_visit
-        # new_func_dict[node] = {
-        #     "func":copy.deepcopy(transformer_visit),
-        #     "imports":copy.deepcopy(func_dict[node]['imports'])
-        # }
-        source = astunparse.unparse(transformer_visit) 
-        print(source)
-        
+        try:
+            transformer_visit = funcCallTransformer.visit(func_dict[node]['func'])
+            del funcCallTransformer
+            # 将参数转换之后村
+            func_dict[node]['func'] = transformer_visit
+            source = astunparse.unparse(transformer_visit) 
+            print("转换成功")
+        except Exception as e:
+            print(e)
+        # print(source)
+    print("方法扫描结束")
     set_func_dict(func_dict)
     set_class_def_dict(class_def_dict)
     # 循环打印show_files函数返回的文件名列表
