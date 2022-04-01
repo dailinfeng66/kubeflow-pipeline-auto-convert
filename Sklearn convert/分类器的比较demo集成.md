@@ -4,9 +4,12 @@
 
 在代码修改过程中遇到的问题：
 
-| 问题                | 解决办法 |
-| ------------------- | -------- |
-| for循环应该怎么转换 |          |
+| 问题                    | 解决办法                                                     |
+| ----------------------- | ------------------------------------------------------------ |
+| for循环应该怎么转换     | 在查阅kfp SDK源码的时候发现<br /><code>from kfp.dsl import (     graph_component,     pipeline,     Condition,     ContainerOp,     ExitHandler,     ParallelFor, )</code><br />表示kfp在定义组件的时候有这几种类型，ParallelFor在官方示例中没出现，在stackoverflow中找到示例发现是列表for循环的一种解决方式，顾名思义应该是并行for，那么只要不出现竞态条件就可以使用这个组件并行执行。<br /><a href="https://developer.ibm.com/blogs/kubeflow-pipelines-and-tekton-advances-data-workloads/#:~:text=The%20ParallelFor%20loop%20in%20Kubeflow%20Pipeline%20is%20a,tasks%20on%20a%20set%20of%20parameters%20in%20parallel.">一篇介绍文档</a> |
+| 使用组件ParallelFor出错 | 使用ParallelFor的时候出错，无法run。暂时还没有找到解决办法   |
+
+
 
 在代码转换中修改掉的地方
 

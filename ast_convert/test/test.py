@@ -61,9 +61,4 @@ def get_components(code, save_path):
 
 
 if __name__ == '__main__':
-    global_param_init()
-    file_path = "../resource/envtest.py"
-    save_path = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/ast_convert/resource/res.py"
-    with open(file_path) as f:
-        code = f.read()
-    get_components(code, save_path)
+    from kfp.v2.dsl import component, Input, Output, OutputPath, Dataset, Model,InputPath
