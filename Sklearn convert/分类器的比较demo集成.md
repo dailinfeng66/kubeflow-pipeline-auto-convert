@@ -8,6 +8,7 @@
 | ----------------------- | ------------------------------------------------------------ |
 | for循环应该怎么转换     | 在查阅kfp SDK源码的时候发现<br /><code>from kfp.dsl import (     graph_component,     pipeline,     Condition,     ContainerOp,     ExitHandler,     ParallelFor, )</code><br />表示kfp在定义组件的时候有这几种类型，ParallelFor在官方示例中没出现，在stackoverflow中找到示例发现是列表for循环的一种解决方式，顾名思义应该是并行for，那么只要不出现竞态条件就可以使用这个组件并行执行。<br /><a href="https://developer.ibm.com/blogs/kubeflow-pipelines-and-tekton-advances-data-workloads/#:~:text=The%20ParallelFor%20loop%20in%20Kubeflow%20Pipeline%20is%20a,tasks%20on%20a%20set%20of%20parameters%20in%20parallel.">一篇介绍文档</a> |
 | 使用组件ParallelFor出错 | 使用ParallelFor的时候出错，无法run。暂时还没有找到解决办法   |
+| if判断                  | dsl.Condition 官方有专门的if判断的方式，可以根据组件的返回值判断是否应该进入下面的组件运行 |
 
 
 
