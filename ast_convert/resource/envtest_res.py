@@ -14,20 +14,20 @@ class Test():
         aaa_ = (aaa + 1)
         return aaa_
 
-@component(output_component_file='load_data_component.yaml', packages_to_install=['joblib', 'pandas', 'numpy', 'argon2', 'requests'])
+@component(output_component_file='load_data_component.yaml', packages_to_install=['numpy', 'argon2', 'joblib', 'pandas', 'requests'])
 def load_data(url_input:Input[Dataset], filename_input:Input[Dataset], url1_input:Input[Dataset], load_data_output:Output[Dataset]):
-    import requests
     import numpy as np
-    from argon2 import Parameters
+    import requests
     import pandas as pd
+    from argon2 import Parameters
     import joblib
     url = joblib.load(url_input.path)['url']
     filename = joblib.load(filename_input.path)['filename']
     url1 = joblib.load(url1_input.path)['url1']
-    from argon2 import Parameters
     import pandas as pd
-    import numpy as np
     import requests
+    from argon2 import Parameters
+    import numpy as np
 
     class Test():
 
@@ -41,27 +41,27 @@ def load_data(url_input:Input[Dataset], filename_input:Input[Dataset], url1_inpu
     xdata = a[['t', 'X_t_1', 'X_t_2', 't_T_1_X_t_1', 't_T_2_X_t_2', 'H_t', 'ck1', 'sk1', 'ck2', 'sk2']]
     ydata = np.log(a['Y'])
     Test()
-    return joblib.dump({'xdata': xdata, ' ydata': ydata}, load_data_output.path)
+    joblib.dump({'xdata': xdata, ' ydata': ydata}, load_data_output.path)
 
-@component(output_component_file='get_model1_component.yaml', packages_to_install=['joblib', 'pandas', 'numpy', 'argon2', 'requests'])
+@component(output_component_file='get_model1_component.yaml', packages_to_install=['numpy', 'argon2', 'joblib', 'pandas', 'requests'])
 def get_model1(xdata_input:Input[Dataset], ydata_input:Input[Dataset], get_model1_output:Output[Dataset]):
-    import requests
     import numpy as np
-    from argon2 import Parameters
+    import requests
     import pandas as pd
+    from argon2 import Parameters
     import joblib
     xdata = joblib.load(xdata_input.path)['xdata']
     ydata = joblib.load(ydata_input.path)['ydata']
-    from argon2 import Parameters
     import pandas as pd
-    import numpy as np
     import requests
+    from argon2 import Parameters
+    import numpy as np
 
     def load_data(url, filename: str, url1: int=10):
-        from argon2 import Parameters
         import pandas as pd
-        import numpy as np
         import requests
+        from argon2 import Parameters
+        import numpy as np
 
         class Test():
 
@@ -87,4 +87,4 @@ def get_model1(xdata_input:Input[Dataset], ydata_input:Input[Dataset], get_model
     load_data()
     data = load_data()
     model = minimize(load_data(), params, args=(xdata.values, ydata.values))
-    return joblib.dump({'model': model}, get_model1_output.path)
+    joblib.dump({'model': model}, get_model1_output.path)

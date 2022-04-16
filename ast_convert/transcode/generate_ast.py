@@ -78,6 +78,8 @@ def pre_ergodic(r_node):
         node_name = type(node).__name__
         if node_name == "Import" or node_name == "ImportFrom":
             import_nodes.append(copy.deepcopy(node))
+            print("import---> "+astunparse.unparse(node) )
+            print(ast.dump(node))
 
     # 遍历每一个node
     for node in r_node.body:
@@ -138,7 +140,7 @@ def visit_Return( node: Return,cur_func_name):
             dict_str += f"\"{param}\":{param},"
         else:
             dict_str += f"\"{param}\":{param}"
-    return_wrap_code = "return joblib.dump({" + dict_str + "}," + f"{cur_func_name}_output.path)"
+    return_wrap_code = "joblib.dump({" + dict_str + "}," + f"{cur_func_name}_output.path)"
     # print(return_wrap_code)
     try:
         r_node = ast.parse(return_wrap_code)
@@ -189,7 +191,7 @@ class CodeTransformer(ast.NodeTransformer):
         :return:
         """
         self.imports.add(node)
-        self.imports_names.add(node.module)
+        self.imports_names.add(node.module.split(".")[0])
         return node
 
 

@@ -27,6 +27,7 @@ def pre_search_py_file(path):
         # 判断是否是文件夹
         if os.path.isdir(cur_path):
             pre_search_py_file(cur_path)
+        # 如果当前文件的文件名是.py结尾并且不是以_res.py结尾，就表示是需要转换的代码
         elif file.endswith(".py") and not file.endswith("_res.py"):
             with open(cur_path) as f:
                 code = f.read()
@@ -60,18 +61,19 @@ def search_py_file(path):
 
 
 if __name__ == '__main__':
+    # 初始化保存方法
     global_param_init()
     # file_path = "/Users/dailinfeng/Desktop/实验室项目/kubeflow/ast_convert/resource/inittest"
     # file_path = "/Users/dailinfeng/Desktop/小项目/auto-sklearn"
     # file_path = "/Users/dailinfeng/Desktop/小项目/scikit-learn"
     # file_path = "/home/dlf/testCode/scikit-learn"
-    file_path = "/home/dlf/testCode/ast_convert/resource"
+    file_path = "/home/dlf/testCode/ast_convert/resource/分类器比较"
     # 传入空的list接收文件名，获取当前项目所有的fun和class
     pre_search_py_file(file_path)
     print("pre_search_py_file 结束")
     # 遍历类的节点map 对类的每一个方法进行处理，具体处理内容就是将类中方法所依赖的方法引进来并将其依赖的第三方包引入
     class_def_dict = get_class_def_dict()
-    
+    # 扫描每一个class
     for node in class_def_dict.keys():
         transformer = ClassTransformer()
         visit = transformer.visit(class_def_dict[node]['class'])
@@ -90,6 +92,7 @@ if __name__ == '__main__':
         funcCallTransformer.current_func = None
         # 开始对参数进行转换 
         try:
+            print("开始转换方法"+func_dict[node]['func'].name)
             transformer_visit = funcCallTransformer.visit(func_dict[node]['func'])
             del funcCallTransformer
             # 将参数转换之后村
