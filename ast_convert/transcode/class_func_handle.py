@@ -17,7 +17,7 @@ class ClassTransformer(ast.NodeTransformer):
     # 存储当前方法的名字
     cur_func_name = ""
     # 保存当前方法调用的方法名
-    call_func = set([])
+    call_func = list([])
 
     def visit_FunctionDef(self, node):
         # 当前方法的名字
@@ -62,7 +62,7 @@ class ClassTransformer(ast.NodeTransformer):
         node.body = list(set(import_list)) + func_node_list + node.body
 
         # 将当前方法调用的方法列表置为空
-        self.call_func = set([])
+        self.call_func = list([])
         return node
 
     def visit_Call(self, node) -> Any:

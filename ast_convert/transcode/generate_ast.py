@@ -9,6 +9,7 @@ from astroid import Import, ImportFrom
 import copy
 
 from class_func_handle import ClassTransformer
+from recursion_func import RecursionGetFunc
 from params_save_util import get_func_dict, get_class_def_dict, set_func_dict, set_class_def_dict
 
 
@@ -78,7 +79,7 @@ def pre_ergodic(r_node):
         node_name = type(node).__name__
         if node_name == "Import" or node_name == "ImportFrom":
             import_nodes.append(copy.deepcopy(node))
-            print("import---> "+astunparse.unparse(node) )
+            print("import---> " + astunparse.unparse(node))
             print(ast.dump(node))
 
     # 遍历每一个node
@@ -117,8 +118,9 @@ def pre_ergodic(r_node):
             🚫 所有的返回值都必须是变量而不能是其他的表达式或者是方法的调用
         ✅扫描当前方法调用了那些方法，并将这些方法添加到当前方法中
 """
-def visit_Return( node: Return,cur_func_name):
 
+
+def visit_Return(node: Return, cur_func_name):
     """
     扫描方法的返回值
     一个方法会先到这儿
@@ -148,9 +150,10 @@ def visit_Return( node: Return,cur_func_name):
     except Exception as e:
         print(e)
     return None
-        #     如果出错就直接不返回
-        # print(astunparse.dump(r_node))
-        # return node  # 不要返回就表示遍历这个node之后不返回这个node  ----> 删除这个node
+    #     如果出错就直接不返回
+    # print(astunparse.dump(r_node))
+    # return node  # 不要返回就表示遍历这个node之后不返回这个node  ----> 删除这个node
+
 
 class CodeTransformer(ast.NodeTransformer):
     """
@@ -170,8 +173,7 @@ class CodeTransformer(ast.NodeTransformer):
     # 存储当前方法的名字
     cur_func_name = ""
     # 保存当前方法调用的方法名
-    call_func = set([])
-
+    call_func = list([])
 
     def visit_Import(self, node: Import):
         """
@@ -179,7 +181,6 @@ class CodeTransformer(ast.NodeTransformer):
         :param node:
         :return:
         """
-
         self.imports_names.add(node.names[0].name)
         self.imports.add(node)
         return node
@@ -193,8 +194,6 @@ class CodeTransformer(ast.NodeTransformer):
         self.imports.add(node)
         self.imports_names.add(node.module.split(".")[0])
         return node
-
-
 
     def visit_FunctionDef(self, node):
         # 当前方法的名字
@@ -216,9 +215,18 @@ class CodeTransformer(ast.NodeTransformer):
             return node
 
         func_dict = get_func_dict()
-        # 之前在对方法扫描的过程中就已经node代码进行一定的修改了，因此将已经修改好的代码先加载过来。
-        node = copy.deepcopy(func_dict[node.name]['func'])
- 
+
+        """
+            这一段是之前的版本，废弃
+            # 之前在对方法扫描的过程中就已经node代码进行一定的修改了，因此将已经修改好的代码先加载过来。
+            # 这个node是加载的第一次扫描所有的类和方法的时候加载的node
+            # node = copy.deepcopy(func_dict[node.name]['func'])
+        """
+        # 现在需要做的是
+        """
+            遍历当前方法节点调用的方法，每扫描到一个方法就递归的访问被调用的方法，看被调用的方法是否调用了其他方法
+            最后返回的是被调用方法修改好之后node节点
+        """
         # 存储原来的参数,用作后面的参数还原
         old_args = []
         new_args = []
@@ -272,25 +280,25 @@ class CodeTransformer(ast.NodeTransformer):
         decorator = handle_decorators(node.name + "_component.yaml", self.imports_names)
         node.decorator_list = decorator  # 设置装饰器
         # print(list(set(imports_list)))
-        total_imports = list(set(list(self.imports) +imports_list))
+        total_imports = list(set(list(self.imports) + imports_list))
         new_body = []
         # print(ast.dump(node))
-        
+
         # 只对最外层的方法节点进行扫描，扫描到return节点之后直接进行转换
         for body_item in node.body:
             node_name = type(body_item).__name__
             inner_node = body_item
             # 单独处理return节点 
-            if node_name  == "Return":
-                return_node = visit_Return(body_item,self.cur_func_name)
+            if node_name == "Return":
+                return_node = visit_Return(body_item, self.cur_func_name)
                 inner_node = copy.deepcopy(return_node)
 
             if inner_node is not None:
                 new_body.append(inner_node)
 
-        node.body =  total_imports + [joblib_module]  + params + new_body
+        node.body = total_imports + [joblib_module] + self.call_func+params + new_body
         # 将当前方法调用的方法列表置为空
-        self.call_func = set([])
+        self.call_func = list([])
         return node
 
     def visit_Call(self, node) -> Any:
@@ -307,8 +315,12 @@ class CodeTransformer(ast.NodeTransformer):
             pass
         elif hasattr(node.func, "id"):
             cal_name = node.func.id
-            # print("call_func_name id:" + cal_name)
-            self.call_func.add(cal_name)
+           # 获取当前工程的所有方法字典
+            func_dict = get_func_dict()
+            recursionGetFunc = RecursionGetFunc()
+            func_node = func_dict[cal_name]['func']
+            call_node = recursionGetFunc.visit(copy.deepcopy(func_node))
+            self.call_func.append(call_node)
         return node
 
 
@@ -321,13 +333,13 @@ def get_components(code, save_path):
     transformer.imports_names = set(["joblib"])
     transformer.current_func = None
     transformer.cur_func_name = ""
-    transformer.call_func = set([])
+    transformer.call_func = list([])
     transformer.code_func_names = []
     # print(ast.dump(r_node))
     # 遍历当前文件的ast，将最外面的方法名获取到，后面对方法进行转换的时候就只转换这一些，其他的就不转换
     for node in r_node.body:
         node_name = type(node).__name__
-        if node_name  == "FunctionDef":
+        if node_name == "FunctionDef":
             transformer.code_func_names.append(node.name)
     res = transformer.visit(r_node)
 

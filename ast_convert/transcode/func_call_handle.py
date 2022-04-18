@@ -18,13 +18,13 @@ class FuncCallTransformer(ast.NodeTransformer):
     # 存储当前方法的名字
     cur_func_name = ""
     # 保存当前方法调用的方法名
-    call_func = set([])
+    call_func = list([])
 
     def visit_FunctionDef(self, node):
         # 当前方法的名字
 
         # self.cur_func_name = node.name
-    
+
         """
         扫描方法节点
         :param node:
@@ -45,10 +45,15 @@ class FuncCallTransformer(ast.NodeTransformer):
         # 遍历当前方法调用的方法列表，检测这些方法是否在当前源文件的方法字典中，如果在的话就将方法node添加到当前方法调用的方法列表中
         func_dict = get_func_dict()
         class_def_dict = get_class_def_dict()
+        # 当前方法调用了那些方法
         for func in self.call_func:
             if func in func_dict.keys():
                 func_value = func_dict[func]
-                func_node_list.append(func_value['func'])
+                called_func_node = func_value['func']
+                # 在当前位置递归的扫描被调用的方法
+                
+                # 节点列表中添加当前方法，但是没有递归，
+                func_node_list.append(called_func_node)
                 import_list += func_value['imports']
             # 如果当前方法是类定义代码的调用
 
