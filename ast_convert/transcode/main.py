@@ -34,7 +34,7 @@ def pre_search_py_file(path):
             with open(cur_path) as f:
                 code = f.read()
             r_node = ast.parse(code)
-            print("读取文件" + cur_path)
+            # print("读取文件" + cur_path)
             # 这个方法的作用是读取当前项目中所有的类和所有的方法，并将他们保存到一个具体的地方
             pre_ergodic(r_node)
 
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     #         print(e)
     # print(source)
     print("方法扫描结束")
-    set_func_dict(func_dict)
+    # set_func_dict(func_dict)
     set_class_def_dict(class_def_dict)
     # 循环打印show_files函数返回的文件名列表
     search_py_file(file_path)

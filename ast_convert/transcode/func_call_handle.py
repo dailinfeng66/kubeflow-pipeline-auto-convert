@@ -51,7 +51,8 @@ class FuncCallTransformer(ast.NodeTransformer):
                 func_value = func_dict[func]
                 called_func_node = func_value['func']
                 # 在当前位置递归的扫描被调用的方法
-                
+                # recursion_get_func = RecursionGetFunc()
+                # recursion_get_func.visit(copy.deepcopy(func_node['func']))
                 # 节点列表中添加当前方法，但是没有递归，
                 func_node_list.append(called_func_node)
                 import_list += func_value['imports']
@@ -86,6 +87,5 @@ class FuncCallTransformer(ast.NodeTransformer):
             pass
         elif hasattr(node.func, "id"):
             cal_name = node.func.id
-            # print("call_func_name id:" + cal_name)
             self.call_func.add(cal_name)
         return node

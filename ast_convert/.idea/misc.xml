@@ -5,24 +5,28 @@
     <option name="openedFilesInfos">
       <list>
         <OpenedFileInfo>
-          <option name="caretOffset" value="1644" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/transcode/recursion_func.py" />
+          <option name="caretOffset" value="140" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/resource/递归引入方法/A.py" />
         </OpenedFileInfo>
         <OpenedFileInfo>
           <option name="caretOffset" value="0" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/transcode/class_func_handle.py" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/resource/递归引入方法/A_res.py" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="301" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/transcode/params_save_util.py" />
+          <option name="caretOffset" value="1201" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/transcodeTwo/main.py" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="1910" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/transcode/main.py" />
+          <option name="caretOffset" value="2283" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/transcodeTwo/func_call_handle.py" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="0" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/transcode/generate_ast.py" />
+          <option name="caretOffset" value="1630" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/transcodeTwo/recursion_func.py" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="10443" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/transcodeTwo/generate_ast.py" />
         </OpenedFileInfo>
       </list>
     </option>

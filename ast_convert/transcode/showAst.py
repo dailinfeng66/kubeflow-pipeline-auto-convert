@@ -1,6 +1,6 @@
 import ast
 
-from graphviz import Digraph
+# from graphviz import Digraph
 
 
 def visit(node, nodes, pindex, g):
@@ -12,12 +12,16 @@ def visit(node, nodes, pindex, g):
         g.edge(str(index), str(pindex))
     for n in ast.iter_child_nodes(node):
         visit(n, nodes, index, g)
+import astunparse
+
 if __name__ == '__main__':
-    with open("../resource/envtest.py") as f:
+    with open("../resource/nofuncfile/func.py") as f:
         code = f.read()
     # 首先遍历出当前源文件的方法字典
     # r_node = ast.parse(code)
-    graph = Digraph(format="png")
+    # graph = Digraph(format="png")
     tree = ast.parse(code)
-    visit(tree, [], 0, graph)
-    graph.render("test")
+    source = astunparse.unparse(tree)
+    print(source)
+    # visit(tree, [], 0, graph)
+    # graph.render("test")

@@ -16,3 +16,18 @@ def func_3(func_3_output:Output[Dataset]):
         return res
     res = func_2(1)
     joblib.dump({'res': res}, func_3_output.path)
+
+@component(output_component_file='func_4_component.yaml', packages_to_install=['joblib'])
+def func_4(func_4_output:Output[Dataset]):
+    import joblib
+
+    def func_2(a):
+
+        def func_1(a, b):
+            return (a + b)
+        res = func_1(1, a)
+        return res
+    res = func_2(1)
+    res = func_2(1)
+    res = func_2(1)
+    joblib.dump({'res': res}, func_4_output.path)

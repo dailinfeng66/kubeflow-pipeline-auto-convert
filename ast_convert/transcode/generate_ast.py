@@ -296,7 +296,7 @@ class CodeTransformer(ast.NodeTransformer):
             if inner_node is not None:
                 new_body.append(inner_node)
 
-        node.body = total_imports + [joblib_module] + self.call_func+params + new_body
+        node.body = total_imports + [joblib_module] + self.call_func + params + new_body
         # 将当前方法调用的方法列表置为空
         self.call_func = list([])
         return node
@@ -315,7 +315,7 @@ class CodeTransformer(ast.NodeTransformer):
             pass
         elif hasattr(node.func, "id"):
             cal_name = node.func.id
-           # 获取当前工程的所有方法字典
+            # 获取当前工程的所有方法字典
             func_dict = get_func_dict()
             recursionGetFunc = RecursionGetFunc()
             func_node = func_dict[cal_name]['func']
@@ -337,10 +337,15 @@ def get_components(code, save_path):
     transformer.code_func_names = []
     # print(ast.dump(r_node))
     # 遍历当前文件的ast，将最外面的方法名获取到，后面对方法进行转换的时候就只转换这一些，其他的就不转换
+    # 重新生成以body，主要是node节点的处理
+    # node_body = []
     for node in r_node.body:
         node_name = type(node).__name__
         if node_name == "FunctionDef":
             transformer.code_func_names.append(node.name)
+        # else:
+        #     node_body.append(node)
+
     res = transformer.visit(r_node)
 
     source = astunparse.unparse(res)  # astunparse 一般python不自带，需要conda 或者 pip安装
