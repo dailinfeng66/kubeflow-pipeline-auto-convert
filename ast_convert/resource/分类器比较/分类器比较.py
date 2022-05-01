@@ -13,11 +13,12 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
+
 # 封装成一个方法
 def get_all_datas():
     names = ["Nearest Neighbors", "Linear SVM", "RBF SVM", "Gaussian Process",
-            "Decision Tree", "Random Forest", "Neural Net", "AdaBoost",
-            "Naive Bayes", "QDA"]
+             "Decision Tree", "Random Forest", "Neural Net", "AdaBoost",
+             "Naive Bayes", "QDA"]
 
     classifiers = [
         KNeighborsClassifier(3),
@@ -31,24 +32,28 @@ def get_all_datas():
         GaussianNB(),
         QuadraticDiscriminantAnalysis()]
 
-    linearly_separable = (X, y) #这是一个变量
-    datasets = [make_moons(noise=0.3, random_state=0),make_circles(noise=0.2, factor=0.5, random_state=1),linearly_separable]
-    return names,classifiers,datasets
+    linearly_separable = (X, y)  # 这是一个变量
+    datasets = [make_moons(noise=0.3, random_state=0), make_circles(noise=0.2, factor=0.5, random_state=1),
+                linearly_separable]
+    return names, classifiers, datasets
+
+
 # 封装成一个方法
 def make_classification_com():
-    X, y = make_classification(n_features=2, n_redundant=0, n_informative=2,random_state=1, n_clusters_per_class=1)
-    return X,y
+    X, y = make_classification(n_features=2, n_redundant=0, n_informative=2, random_state=1, n_clusters_per_class=1)
+    return X, y
+
 
 # 封装成一个方法
 def np_random_random_state():
     rng = np.random.RandomState(2)
     return rng
 
+
 # 封装成一个方法
-def rng_uniform(X,rng):
+def rng_uniform(X, rng):
     X += 2 * rng.uniform(size=X.shape)
     return X
-
 
 
 # iterate over datasets
@@ -63,7 +68,6 @@ for ds in datasets:
     xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.02),
                          np.arange(y_min, y_max, 0.02))
 
-
     for name, clf in zip(names, classifiers):
         clf.fit(X_train, y_train)
         score = clf.score(X_test, y_test)
@@ -76,5 +80,3 @@ for ds in datasets:
         # Put the result into a color plot
         Z = Z.reshape(xx.shape)
         print(Z)
-
-
