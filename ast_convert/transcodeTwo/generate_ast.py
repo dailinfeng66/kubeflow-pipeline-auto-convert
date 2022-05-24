@@ -79,8 +79,6 @@ def pre_ergodic(r_node):
         node_name = type(node).__name__
         if node_name == "Import" or node_name == "ImportFrom":
             import_nodes.append(copy.deepcopy(node))
-            # print("import---> " + astunparse.unparse(node))
-            # print(ast.dump(node))
 
     # 遍历每一个node
     for node in r_node.body:
@@ -195,7 +193,6 @@ class CodeTransformer(ast.NodeTransformer):
 
     def visit_FunctionDef(self, node):
 
-
         """
         扫描方法节点
         :param node:
@@ -205,10 +202,11 @@ class CodeTransformer(ast.NodeTransformer):
         """
             替换形参名字
         """
-        self.generic_visit(node)  # 这里表示先去访问里面的children node
+
+        # self.generic_visit(node)  # 这里表示先去访问里面的children node
         # 如果当前扫描到的方法不在当前顶层方法中 
         # 则表示当前扫到的方法是被方法调用的方法，因此不对方法节点进行处理
-                # 当前方法的名字
+        # 当前方法的名字
         if node.name not in self.code_func_names:
             return node
 
@@ -288,13 +286,13 @@ class CodeTransformer(ast.NodeTransformer):
             inner_node = body_item
             # 单独处理return节点 
             if node_name == "Return":
-                return_node = visit_Return(body_item,node.name )
+                return_node = visit_Return(body_item, node.name)
                 inner_node = copy.deepcopy(return_node)
 
             if inner_node is not None:
                 new_body.append(inner_node)
 
-        node.body = total_imports + [joblib_module] +  params + new_body
+        node.body = total_imports + [joblib_module] + params + new_body
         # # 将当前方法调用的方法列表置为空
         # self.call_func = list([])
         return node
@@ -339,20 +337,25 @@ def get_components(code, save_path):
     for node in r_node.body:
         node_name = type(node).__name__
         if node_name == "FunctionDef":
-            #顶层方法定义
+            # 顶层方法定义 将顶层方法添加到顶层方法列表中
             transformer.code_func_names.append(node.name)
             #     处理方法节点，扫描当前方法节点 获取他的所有调用到的第三方包
             call_transformer = FuncCallTransformer()
             call_transformer.call_func = list([])
             # 对方法调用进行转换
             func_node = call_transformer.visit(node)
-            node_body.append(func_node)
+            node_body.append(copy.deepcopy(func_node))
             del call_transformer
         else:
-            node_body.append(node)
-
+            node_body.append(copy.deepcopy(node))
+    # 将引入成功的内容替换原来的
     r_node.body = node_body
+    # 方法引入之后，组件代码转换之前
+    # print("方法引入之后，组件代码转换之前")
+    # print(astunparse.unparse(r_node))
+    # 在调用方法引入完成之后再做的其他代码的转换
     after_r_node = transformer.visit(r_node)
+
     del transformer
     source = astunparse.unparse(after_r_node)  # astunparse 一般python不自带，需要conda 或者 pip安装
     # 在文件顶部添加导包语句

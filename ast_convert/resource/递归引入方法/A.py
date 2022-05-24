@@ -8,6 +8,6 @@ def func_3():
 
 def func_4():
     res = func_2(1)
-    res = func_2(1)
+    res = func_3(1)
     res = func_2(1)
     return res
