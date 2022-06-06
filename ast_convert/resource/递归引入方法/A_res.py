@@ -21,6 +21,11 @@ def func_3(func_3_output:Output[Dataset]):
 
 @component(output_component_file='func_4_component.yaml', packages_to_install=['joblib', 'resource'])
 def func_4(func_4_output:Output[Dataset]):
+    """
+
+    :param func_4_output:
+    :return:
+    """
     from resource.递归引入方法.B import func_2
     import joblib
 
