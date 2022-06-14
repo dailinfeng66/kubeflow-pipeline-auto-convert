@@ -7,7 +7,7 @@ from typing import Any
 import astunparse
 from astroid import Import, ImportFrom
 import copy
-
+from func_call_handle import FuncCallTransformer
 from class_func_handle import ClassTransformer
 from recursion_func import RecursionGetFunc
 from params_save_util import get_func_dict, get_class_def_dict, set_func_dict, set_class_def_dict
@@ -79,8 +79,6 @@ def pre_ergodic(r_node):
         node_name = type(node).__name__
         if node_name == "Import" or node_name == "ImportFrom":
             import_nodes.append(copy.deepcopy(node))
-            print("import---> " + astunparse.unparse(node))
-            print(ast.dump(node))
 
     # 遍历每一个node
     for node in r_node.body:
@@ -157,9 +155,7 @@ def visit_Return(node: Return, cur_func_name):
 
 class CodeTransformer(ast.NodeTransformer):
     """
-            对一个源文件中的方法进行检测，获取顶层方法所调用的方法。
-            将被调用方法的方法体添加进去   
-            
+            对一个源文件中的方法进行检测，获取顶层方法所调用的方法。  
     """
 
     # 记录当前代码有几个方法定义，当扫描到方法的时候只对这几个方法定义代码的方法进行转换
@@ -196,8 +192,6 @@ class CodeTransformer(ast.NodeTransformer):
         return node
 
     def visit_FunctionDef(self, node):
-        # 当前方法的名字
-        self.cur_func_name = node.name
 
         """
         扫描方法节点
@@ -208,9 +202,11 @@ class CodeTransformer(ast.NodeTransformer):
         """
             替换形参名字
         """
-        self.generic_visit(node)  # 这里表示先去访问里面的children node
+
+        # self.generic_visit(node)  # 这里表示先去访问里面的children node
         # 如果当前扫描到的方法不在当前顶层方法中 
         # 则表示当前扫到的方法是被方法调用的方法，因此不对方法节点进行处理
+        # 当前方法的名字
         if node.name not in self.code_func_names:
             return node
 
@@ -290,38 +286,38 @@ class CodeTransformer(ast.NodeTransformer):
             inner_node = body_item
             # 单独处理return节点 
             if node_name == "Return":
-                return_node = visit_Return(body_item, self.cur_func_name)
+                return_node = visit_Return(body_item, node.name)
                 inner_node = copy.deepcopy(return_node)
 
             if inner_node is not None:
                 new_body.append(inner_node)
 
-        node.body = total_imports + [joblib_module] + self.call_func + params + new_body
-        # 将当前方法调用的方法列表置为空
-        self.call_func = list([])
+        node.body = total_imports + [joblib_module] + params + new_body
+        # # 将当前方法调用的方法列表置为空
+        # self.call_func = list([])
         return node
 
-    def visit_Call(self, node) -> Any:
-        """
-        获取方法调用的代码
-        这个方法会在每一个方法定义代码扫描之前扫描
-        :param node:
-        :return:
-        """
-        self.generic_visit(node)
-
-        if hasattr(node.func, "value"):
-            # print("call_func_name value:" + node.func.value.id)
-            pass
-        elif hasattr(node.func, "id"):
-            cal_name = node.func.id
-            # 获取当前工程的所有方法字典
-            func_dict = get_func_dict()
-            recursionGetFunc = RecursionGetFunc()
-            func_node = func_dict[cal_name]['func']
-            call_node = recursionGetFunc.visit(copy.deepcopy(func_node))
-            self.call_func.append(call_node)
-        return node
+    # def visit_Call(self, node) -> Any:
+    #     """
+    #     获取方法调用的代码
+    #     这个方法会在每一个方法定义代码扫描之前扫描
+    #     :param node:
+    #     :return:
+    #     """
+    #     self.generic_visit(node)
+    #
+    #     if hasattr(node.func, "value"):
+    #         # print("call_func_name value:" + node.func.value.id)
+    #         pass
+    #     elif hasattr(node.func, "id"):
+    #         cal_name = node.func.id
+    #         # 获取当前工程的所有方法字典
+    #         func_dict = get_func_dict()
+    #         recursionGetFunc = RecursionGetFunc()
+    #         func_node = func_dict[cal_name]['func']
+    #         call_node = recursionGetFunc.visit(copy.deepcopy(func_node))
+    #         self.call_func.append(call_node)
+    #     return node
 
 
 def get_components(code, save_path):
@@ -335,20 +331,33 @@ def get_components(code, save_path):
     transformer.cur_func_name = ""
     transformer.call_func = list([])
     transformer.code_func_names = []
-    # print(ast.dump(r_node))
-    # 遍历当前文件的ast，将最外面的方法名获取到，后面对方法进行转换的时候就只转换这一些，其他的就不转换
+
     # 重新生成以body，主要是node节点的处理
-    # node_body = []
+    node_body = []
     for node in r_node.body:
         node_name = type(node).__name__
         if node_name == "FunctionDef":
+            # 顶层方法定义 将顶层方法添加到顶层方法列表中
             transformer.code_func_names.append(node.name)
-        # else:
-        #     node_body.append(node)
+            #     处理方法节点，扫描当前方法节点 获取他的所有调用到的第三方包
+            call_transformer = FuncCallTransformer()
+            call_transformer.call_func = list([])
+            # 对方法调用进行转换
+            func_node = call_transformer.visit(node)
+            node_body.append(copy.deepcopy(func_node))
+            del call_transformer
+        else:
+            node_body.append(copy.deepcopy(node))
+    # 将引入成功的内容替换原来的
+    r_node.body = node_body
+    # 方法引入之后，组件代码转换之前
+    # print("方法引入之后，组件代码转换之前")
+    # print(astunparse.unparse(r_node))
+    # 在调用方法引入完成之后再做的其他代码的转换
+    after_r_node = transformer.visit(r_node)
 
-    res = transformer.visit(r_node)
-
-    source = astunparse.unparse(res)  # astunparse 一般python不自带，需要conda 或者 pip安装
+    del transformer
+    source = astunparse.unparse(after_r_node)  # astunparse 一般python不自带，需要conda 或者 pip安装
     # 在文件顶部添加导包语句
     component_import = "import kfp\n" \
                        "from kfp.v2 import dsl\n" \

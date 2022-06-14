@@ -2,13 +2,24 @@ def global_param_init():  # 初始化
     global func_dict
     global class_def_dict
     global class_func_list
-
+    global rec_save
     # 存储当前源文件中的方法，key为方法名 value为方法节点
     func_dict = dict({})
     # 保存当前源代码内的类代码
     class_def_dict = dict({})
     # 保存类方法列表，如果扫描到的方法名等于类方法名就跳过这个方法的处理
     class_func_list = set([])
+    # 递归剪枝
+    rec_save = dict({})
+
+
+def get_rec_save():
+    return rec_save
+
+
+def set_rec_save(value):
+    global rec_save
+    rec_save = value
 
 
 def get_func_dict():

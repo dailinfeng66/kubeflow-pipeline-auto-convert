@@ -5,7 +5,7 @@ import kfp.components as comp
 
 from resource.递归引入方法.B import func_2
 
-@component(output_component_file='func_3_component.yaml', packages_to_install=['joblib', 'resource'])
+@component(output_component_file='func_3_component.yaml', packages_to_install=['resource', 'joblib'])
 def func_3(func_3_output:Output[Dataset]):
     from resource.递归引入方法.B import func_2
     import joblib
@@ -19,13 +19,8 @@ def func_3(func_3_output:Output[Dataset]):
     res = func_2(1)
     joblib.dump({'res': res}, func_3_output.path)
 
-@component(output_component_file='func_4_component.yaml', packages_to_install=['joblib', 'resource'])
+@component(output_component_file='func_4_component.yaml', packages_to_install=['resource', 'joblib'])
 def func_4(func_4_output:Output[Dataset]):
-    """
-
-    :param func_4_output:
-    :return:
-    """
     from resource.递归引入方法.B import func_2
     import joblib
 

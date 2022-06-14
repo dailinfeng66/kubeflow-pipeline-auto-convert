@@ -53,8 +53,10 @@ class RecursionGetFunc(ast.NodeTransformer):
                 recursion_get_func = RecursionGetFunc()
                 # 获取当前被调用方法的node
                 func_node = func_dict[cal_name]
+                # print("进入递归->"+node.name)
                 # 对当前被调用方法进行检查，看看它是否调用了其他方法
                 call_func_node = recursion_get_func.visit(copy.deepcopy(func_node['func']))
+                # print("退出递归->"+node.name)
                 # 将当前被调用方法 处理之后的方法节点和所需要引入的包都添加到这一层来
                 self.import_list.append(func_node['imports'])
                 self.call_func_nodes.append(call_func_node)
