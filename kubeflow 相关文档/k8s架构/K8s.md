@@ -79,6 +79,12 @@ etcd本身是一个高可用的kv存储数据库，主要用于共享配置和�
 
 ### kubelet
 
+kubelet的主要作用是：
+
++ pod管理，运行pod等
++ 容器健康检查：容器运行之后，需要对容器健康状态进行检查，如果处于不健康状态则需要按照特定的策略进行处理。
++ 容器监控：监控所在节点的资源使用情况并定时向master报告
+
 `kubelet` 会在集群中每个[节点（node）](https://kubernetes.io/zh-cn/docs/concepts/architecture/nodes/)上运行。 它保证[容器（containers）](https://kubernetes.io/zh-cn/docs/concepts/overview/what-is-kubernetes/#why-containers)都运行在 [Pod](https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/) 中。
 
 kubelet 接收一组通过各类机制提供给它的 PodSpecs， 确保这些 PodSpecs 中描述的容器处于运行状态且健康。 kubelet 不会管理不是由 Kubernetes 创建的容器。
@@ -90,5 +96,4 @@ kubelet 接收一组通过各类机制提供给它的 PodSpecs， 确保这些 P
 kube-proxy 维护节点上的一些网络规则， 这些网络规则会允许从集群内部或外部的网络会话与 Pod 进行网络通信。
 
 如果操作系统提供了可用的数据包过滤层，则 kube-proxy 会通过它来实现网络规则。 否则，kube-proxy 仅做流量转发。
-
 
