@@ -1,5 +1,40 @@
 # K8s架构中的一些其他组件
 
+<img src="k8s架构理解.assets/image-20220917132538902.png" alt="image-20220917132538902" style="zoom:50%;" />
+
+
+
+StatefulSet 有状态应用部署
+
+Deployment 无状态应用
+
+DaemonSet 在每一个节点上都部署一个应用
+
+ReplicaSet 副本集
+
+<img src="k8s架构理解.assets/image-20220917132849343.png" alt="image-20220917132849343" style="zoom:50%;" />
+
+Service 记录了这个服务发布了那些端口，定义了哪些负载均衡策略来让别人访问
+
+Ingress就是表示怎么发布一个对外的入口。配置入站的路由规则
+
+一般在微服务的部署的时候需要做代码和配置的分离，因此就把这些配置提出来，如果这些配置是明文可读的就存configmap 如果是需要安全保护的就存secret。如果需要存一些大的数据就使用pvc
+
+- PV：PV描述的是持久化存储卷，主要定义的是一个持久化存储在宿主机上的目录，比如一个NFS的挂载目录。
+- PVC：PVC描述的是Pod所希望使用的持久化存储的属性，比如，Volume存储的大小、可读写权限等等。
+
+Kubernetes管理员设置好网络存储的类型，提供对应的PV描述符配置到Kubernetes，使用者需要存储的时候只需要创建PVC，然后在Pod中使用Volume关联PVC，即可让Pod使用到存储资源，它们之间的关系如下图所示。
+
+<img src="https://support.huaweicloud.com/basics-cce/zh-cn_image_0261235726.png" alt="img"  />
+
+
+
+[hugepage](https://cloud.tencent.com/developer/article/1984772)
+
+
+
+
+
 ## kubelet
 
 每个Node节点上都运行一个 Kubelet 服务进程，默认监听 10250 端口，接收并执行 Master 发来的指令，管理 Pod 及 Pod 中的容器。每个 Kubelet 进程会在 API Server 上注册所在Node节点的信息，定期向 Master 节点汇报该节点的资源使用情况，并通过 cAdvisor 监控节点和容器的资源。
