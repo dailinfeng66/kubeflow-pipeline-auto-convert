@@ -2,6 +2,10 @@
 
 [k8s文档](https://kubernetes.io/zh-cn/docs/home/)
 
+
+
+## 谷歌对 Kubernetes的定位目标——自动化、智能化
+
 ## K8s架构图
 
 ![image-20220817153344285](../K8s.assets/image-20220817153344285-0721626.png)
